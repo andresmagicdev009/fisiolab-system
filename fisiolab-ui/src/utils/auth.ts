@@ -5,11 +5,11 @@ type UserResource = NonNullable<ReturnType<typeof useUser>['user']>;
 export type UserRole = 'paciente' | 'fisioterapeuta' | 'medico' | 'pasante' | 'admin';
 
 const ROLE_REDIRECTS: Record<UserRole, string> = {
-  admin: '/admin/default',
-  fisioterapeuta: '/admin/default',
-  medico: '/admin/default',
-  pasante: '/admin/default',
-  paciente: '/admin/default',
+  admin: '/admin/dashboard',
+  fisioterapeuta: '/admin/fisio',
+  medico: '/admin/medico',
+  pasante: '/admin/fisio',
+  paciente: '/admin/fisio',
 };
 
 export function getRoleRedirect(role: string | undefined): string {

@@ -7,7 +7,12 @@
       "Bash(Sort-Object FullName)",
       "Bash(findstr \"^d\")",
       "Bash(npx tsc *)",
-      "Bash(node -e \"const c = require\\('@clerk/clerk-react'\\); console.log\\(Object.keys\\(c\\).filter\\(k => k.toLowerCase\\(\\).includes\\('user'\\)\\)\\)\")"
+      "Bash(node -e \"const c = require\\('@clerk/clerk-react'\\); console.log\\(Object.keys\\(c\\).filter\\(k => k.toLowerCase\\(\\).includes\\('user'\\)\\)\\)\")",
+      "Bash(ls \"D:\\\\Proyectos\\\\Web\\\\fisiolab-system\\\\fisiolab-backend\\\\.git\" 2>&1 | head -5)",
+      "Read(//d/Proyectos/Web/fisiolab-system/fisiolab-backend/.git/**)",
+      "Bash(npm install *)",
+      "Bash(ls \"d:\\\\Proyectos\\\\Web\\\\fisiolab-system\\\\fisiolab-backend\\\\src\" 2>/dev/null || echo \"NOT FOUND\")",
+      "Read(//d/Proyectos/Web/fisiolab-system/fisiolab-backend/src/**)"
     ]
   }
 }

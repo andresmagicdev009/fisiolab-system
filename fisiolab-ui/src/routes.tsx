@@ -1,88 +1,98 @@
 import { Icon } from '@chakra-ui/react';
 import {
-  MdBarChart,
-  MdPerson,
   MdHome,
+  MdPeople,
+  MdPerson,
   MdLock,
-  MdOutlineShoppingCart,
+  MdDashboard,
 } from 'react-icons/md';
-
-// Admin Imports
-import MainDashboard from 'views/admin/default';
-import NFTMarketplace from 'views/admin/marketplace';
-import Profile from 'views/admin/profile';
-import DataTables from 'views/admin/dataTables';
-import RTL from 'views/admin/rtl';
-
-// Auth Imports
-import SignInCentered from 'views/auth/signIn';
-import AuthCallback from 'views/auth/callback';
 import { Navigate } from 'react-router-dom';
 
-const routes = [
+// Dashboard views per role
+import AdminDashboard from 'views/admin/adminDashboard';
+import FisioDashboard from 'views/admin/fisioDashboard';
+import MedicoDashboard from 'views/admin/medicoDashboard';
+
+// Shared views
+import PatientsView from 'views/admin/patients';
+import Profile from 'views/admin/profile';
+
+// Auth views
+import SignInCentered from 'views/auth/signIn';
+import AuthCallback from 'views/auth/callback';
+
+const routes: RoutesType[] = [
+  // ── Admin ────────────────────────────────────────────────
   {
-    name: 'Main Dashboard',
+    name: 'Dashboard',
     layout: '/admin',
-    path: '/default',
-    icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
-    component: <MainDashboard />,
+    path: '/dashboard',
+    icon: <Icon as={MdDashboard} width='20px' height='20px' color='inherit' />,
+    component: <AdminDashboard />,
+    roles: ['admin'],
   },
+
+  // ── Fisioterapeuta / Pasante ──────────────────────────────
   {
-    name: 'NFT Marketplace',
+    name: 'Dashboard',
     layout: '/admin',
-    path: '/nft-marketplace',
-    icon: (
-      <Icon
-        as={MdOutlineShoppingCart}
-        width="20px"
-        height="20px"
-        color="inherit"
-      />
-    ),
-    component: <NFTMarketplace />,
-    secondary: true,
+    path: '/fisio',
+    icon: <Icon as={MdHome} width='20px' height='20px' color='inherit' />,
+    component: <FisioDashboard />,
+    roles: ['fisioterapeuta', 'pasante'],
   },
+
+  // ── Médico ───────────────────────────────────────────────
   {
-    name: 'Data Tables',
+    name: 'Dashboard',
     layout: '/admin',
-    icon: <Icon as={MdBarChart} width="20px" height="20px" color="inherit" />,
-    path: '/data-tables',
-    component: <DataTables />,
+    path: '/medico',
+    icon: <Icon as={MdHome} width='20px' height='20px' color='inherit' />,
+    component: <MedicoDashboard />,
+    roles: ['medico'],
   },
+
+  // ── Pacientes (fisio, médico, pasante, admin) ─────────────
   {
-    name: 'Profile',
+    name: 'Pacientes',
+    layout: '/admin',
+    path: '/patients',
+    icon: <Icon as={MdPeople} width='20px' height='20px' color='inherit' />,
+    component: <PatientsView />,
+    roles: ['admin', 'fisioterapeuta', 'medico', 'pasante'],
+  },
+
+  // ── Perfil (todos los roles) ──────────────────────────────
+  {
+    name: 'Perfil',
     layout: '/admin',
     path: '/profile',
-    icon: <Icon as={MdPerson} width="20px" height="20px" color="inherit" />,
+    icon: <Icon as={MdPerson} width='20px' height='20px' color='inherit' />,
     component: <Profile />,
+    roles: ['admin', 'fisioterapeuta', 'medico', 'pasante', 'paciente'],
   },
+
+  // ── Auth ─────────────────────────────────────────────────
   {
     name: 'Sign In',
     layout: '/auth',
     path: '/sign-in',
-    icon: <Icon as={MdLock} width="20px" height="20px" color="inherit" />,
+    icon: <Icon as={MdLock} width='20px' height='20px' color='inherit' />,
     component: <SignInCentered />,
   },
   {
     name: 'Sign Up',
     layout: '/auth',
     path: '/sign-up',
-    icon: <Icon as={MdLock} width="20px" height="20px" color="inherit" />,
+    icon: <Icon as={MdLock} width='20px' height='20px' color='inherit' />,
     component: <Navigate to='/auth/sign-in' replace />,
   },
   {
     name: 'Auth Callback',
     layout: '/auth',
     path: '/callback',
-    icon: <Icon as={MdLock} width="20px" height="20px" color="inherit" />,
+    icon: <Icon as={MdLock} width='20px' height='20px' color='inherit' />,
     component: <AuthCallback />,
-  },
-  {
-    name: 'RTL Admin',
-    layout: '/rtl',
-    path: '/rtl-default',
-    icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
-    component: <RTL />,
   },
 ];
 

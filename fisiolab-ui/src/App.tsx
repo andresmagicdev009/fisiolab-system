@@ -1,12 +1,13 @@
 import './assets/css/App.css';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth } from '@clerk/clerk-react';
+import { useAuth, useUser } from '@clerk/clerk-react';
 import AuthLayout from './layouts/auth';
 import AdminLayout from './layouts/admin';
 import RTLLayout from './layouts/rtl';
-import { ChakraProvider } from '@chakra-ui/react';
+import { ChakraProvider, Flex, Spinner } from '@chakra-ui/react';
 import initialTheme from './theme/theme';
 import { useState, useEffect } from 'react';
+import { getUserRole, getRoleRedirect } from './utils/auth';
 
 function DevTokenLogger(): null {
   const { isSignedIn, getToken } = useAuth();
@@ -21,11 +22,45 @@ function DevTokenLogger(): null {
   return null;
 }
 
+function RootRedirect() {
+  const { isLoaded, isSignedIn } = useAuth();
+  const { user } = useUser();
+
+  if (!isLoaded) {
+    return (
+      <Flex minH='100vh' align='center' justify='center'>
+        <Spinner size='xl' color='brand.500' />
+      </Flex>
+    );
+  }
+
+  if (isSignedIn && user) {
+    const role = getUserRole(user);
+    return <Navigate to={getRoleRedirect(role)} replace />;
+  }
+
+  return <Navigate to='/auth/sign-in' replace />;
+}
+
 function ProtectedRoute({ children }: { children: JSX.Element }) {
   const { isSignedIn, isLoaded } = useAuth();
 
   if (!isLoaded) return null;
   if (!isSignedIn) return <Navigate to='/auth/sign-in' replace />;
+  return children;
+}
+
+function GuestRoute({ children }: { children: JSX.Element }) {
+  const { isSignedIn, isLoaded } = useAuth();
+  const { user } = useUser();
+
+  if (!isLoaded) return null;
+
+  if (isSignedIn && user) {
+    const role = getUserRole(user);
+    return <Navigate to={getRoleRedirect(role)} replace />;
+  }
+
   return children;
 }
 
@@ -36,7 +71,14 @@ export default function Main() {
     <ChakraProvider theme={currentTheme}>
       <DevTokenLogger />
       <Routes>
-        <Route path='auth/*' element={<AuthLayout />} />
+        <Route
+          path='auth/*'
+          element={
+            <GuestRoute>
+              <AuthLayout />
+            </GuestRoute>
+          }
+        />
         <Route
           path='admin/*'
           element={
@@ -53,7 +95,7 @@ export default function Main() {
             </ProtectedRoute>
           }
         />
-        <Route path='/' element={<Navigate to='/auth/sign-in' replace />} />
+        <Route path='/' element={<RootRedirect />} />
       </Routes>
     </ChakraProvider>
   );
