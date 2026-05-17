@@ -1,0 +1,6 @@
+allowBuilds:
+  '@clerk/shared': false
+  '@nestjs/core': true
+  '@scarf/scarf': false
+  bcrypt: true
+  unrs-resolver: true
