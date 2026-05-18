@@ -1,6 +1,7 @@
 { 
   "compilerOptions": {
     "typeRoots": ["node_modules/@types", "src/types"],
+    "types": ["node"],
     "target": "es2016",
     "lib": ["dom", "dom.iterable", "esnext", "es2015.iterable"],
     "allowJs": true,

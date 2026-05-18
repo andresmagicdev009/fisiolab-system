@@ -10,5 +10,8 @@ export default registerAs(
     migrations: [__dirname + '/../database/migrations/*{.ts,.js}'],
     synchronize: process.env.NODE_ENV !== 'production',
     logging: process.env.NODE_ENV === 'development',
+    ssl: process.env.DATABASE_URL?.includes('neon.tech')
+      ? { rejectUnauthorized: false }
+      : false,
   }),
 );

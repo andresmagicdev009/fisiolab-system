@@ -6,7 +6,7 @@ const apiClient = axios.create({
 });
 
 apiClient.interceptors.request.use(async (config) => {
-  const token = await (window as any).Clerk?.session?.getToken();
+  const token = await (window as any).Clerk?.session?.getToken({ template: 'fisiolab-sudo' });
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }

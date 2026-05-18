@@ -35,7 +35,10 @@
       "Bash(PGPASSWORD=magic psql -U postgres -h localhost -d fisiolab_db -c \"\\\\dt\")",
       "PowerShell($env:PGPASSWORD = 'magic'; psql -U postgres -h localhost -d fisiolab -c \"TRUNCATE TABLE audit_logs, patients, users RESTART IDENTITY CASCADE;\")",
       "Bash(cd \"d:\\\\Proyectos\\\\Web\\\\fisiolab-system\" && cat fisiolab-backend/.gitignore 2>&1 | head -20)",
-      "Read(//d/Proyectos/Web/fisiolab-system/**)"
+      "Read(//d/Proyectos/Web/fisiolab-system/**)",
+      "Bash(pnpm migration:run)",
+      "Bash(node -e \"require\\('dotenv'\\).config\\(\\); const url = process.env.DATABASE_URL; try { const u = new URL\\(url\\); console.log\\('host:', u.hostname\\); console.log\\('db:', u.pathname\\); console.log\\('has sslmode:', url.includes\\('sslmode'\\)\\); } catch\\(e\\) { console.log\\('URL parse error:', e.message\\); }\")",
+      "Bash(pnpm exec *)"
     ]
   }
 }

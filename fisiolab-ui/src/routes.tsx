@@ -1,10 +1,10 @@
 import { Icon } from '@chakra-ui/react';
 import {
   MdHome,
-  MdPeople,
   MdPerson,
   MdLock,
   MdDashboard,
+  MdPeople,
 } from 'react-icons/md';
 import { Navigate } from 'react-router-dom';
 
@@ -14,8 +14,8 @@ import FisioDashboard from 'views/admin/fisioDashboard';
 import MedicoDashboard from 'views/admin/medicoDashboard';
 
 // Shared views
-import PatientsView from 'views/admin/patients';
 import Profile from 'views/admin/profile';
+import PatientsView from 'views/admin/patients';
 
 // Auth views
 import SignInCentered from 'views/auth/signIn';
@@ -52,7 +52,7 @@ const routes: RoutesType[] = [
     roles: ['medico'],
   },
 
-  // ── Pacientes (fisio, médico, pasante, admin) ─────────────
+  // ── Pacientes ────────────────────────────────────────────
   {
     name: 'Pacientes',
     layout: '/admin',

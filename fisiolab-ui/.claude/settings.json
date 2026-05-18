@@ -12,7 +12,17 @@
       "Read(//d/Proyectos/Web/fisiolab-system/fisiolab-backend/.git/**)",
       "Bash(npm install *)",
       "Bash(ls \"d:\\\\Proyectos\\\\Web\\\\fisiolab-system\\\\fisiolab-backend\\\\src\" 2>/dev/null || echo \"NOT FOUND\")",
-      "Read(//d/Proyectos/Web/fisiolab-system/fisiolab-backend/src/**)"
+      "Read(//d/Proyectos/Web/fisiolab-system/fisiolab-backend/src/**)",
+      "Bash(Get-ChildItem \"d:\\\\Proyectos\\\\Web\\\\fisiolab-system\\\\fisiolab-ui\\\\src\\\\views\\\\admin\" -Recurse -Name)",
+      "Bash(Get-ChildItem \"d:\\\\Proyectos\\\\Web\\\\fisiolab-system\\\\fisiolab-ui\\\\src\" -Name)",
+      "Bash(Remove-Item \"d:\\\\Proyectos\\\\Web\\\\fisiolab-system\\\\fisiolab-ui\\\\src\\\\views\\\\admin\\\\patients\\\\index.tsx\" -Force)",
+      "Bash(Remove-Item \"d:\\\\Proyectos\\\\Web\\\\fisiolab-system\\\\fisiolab-ui\\\\src\\\\components\\\\patients\\\\PatientForm.tsx\" -Force)",
+      "Bash(Remove-Item \"d:\\\\Proyectos\\\\Web\\\\fisiolab-system\\\\fisiolab-ui\\\\src\\\\hooks\\\\usePatients.ts\" -Force)",
+      "Bash(Remove-Item \"d:\\\\Proyectos\\\\Web\\\\fisiolab-system\\\\fisiolab-ui\\\\src\\\\schemas\\\\patientSchema.ts\" -Force)",
+      "Bash(Remove-Item \"d:\\\\Proyectos\\\\Web\\\\fisiolab-system\\\\fisiolab-ui\\\\src\\\\services\\\\patientsService.ts\" -Force)",
+      "Bash(cat \"d:/Proyectos/Web/fisiolab-system/fisiolab-backend/.env\" 2>/dev/null || echo \"FILE NOT FOUND\")",
+      "Read(//d/Proyectos/Web/fisiolab-system/fisiolab-backend/**)",
+      "Bash(npm i *)"
     ]
   }
 }
