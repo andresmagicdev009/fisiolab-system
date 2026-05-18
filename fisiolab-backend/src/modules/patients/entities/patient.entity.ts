@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Exclude } from 'class-transformer';
 import {
   Column,
   CreateDateColumn,
@@ -32,7 +33,7 @@ export class Patient {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @ApiPropertyOptional({ example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890', nullable: true })
+  @Exclude()
   @Column({ name: 'user_id', nullable: true, type: 'uuid' })
   userId!: string | null;
 

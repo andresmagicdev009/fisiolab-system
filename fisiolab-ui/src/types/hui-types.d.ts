@@ -13,5 +13,6 @@ declare global {
     path: string;
     secondary?: boolean;
     roles?: string[];
+    hidden?: boolean;
   }
 }

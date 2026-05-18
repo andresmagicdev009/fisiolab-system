@@ -6,17 +6,18 @@ describe('AppController', () => {
   let appController: AppController;
 
   beforeEach(async () => {
+    const mockAppService = { health: jest.fn().mockResolvedValue({ status: 'ok' }) };
+
     const app: TestingModule = await Test.createTestingModule({
       controllers: [AppController],
-      providers: [AppService],
+      providers: [{ provide: AppService, useValue: mockAppService }],
     }).compile();
 
     appController = app.get<AppController>(AppController);
   });
 
-  describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');
-    });
+  it('health returns status ok', async () => {
+    const result = await appController.health();
+    expect(result).toMatchObject({ status: 'ok' });
   });
 });

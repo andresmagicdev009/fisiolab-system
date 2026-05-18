@@ -26,7 +26,8 @@ import {
 } from '@tanstack/react-table';
 import Card from 'components/card/Card';
 import * as React from 'react';
-import { MdDelete, MdEdit, MdKeyboardArrowDown, MdKeyboardArrowUp } from 'react-icons/md';
+import { MdDelete, MdEdit, MdKeyboardArrowDown, MdKeyboardArrowUp, MdRemoveRedEye } from 'react-icons/md';
+import { useNavigate } from 'react-router-dom';
 import { Genero, Patient } from 'types/models';
 
 const columnHelper = createColumnHelper<Patient>();
@@ -46,6 +47,7 @@ export default function PatientTable({
   canWrite = true,
   canDelete = false,
 }: PatientTableProps) {
+  const navigate = useNavigate();
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
@@ -165,6 +167,14 @@ export default function PatientTable({
       ),
       cell: (info) => (
         <HStack spacing='1'>
+          <IconButton
+            aria-label='Ver detalle'
+            icon={<Icon as={MdRemoveRedEye} />}
+            size='sm'
+            colorScheme='brand'
+            variant='ghost'
+            onClick={() => navigate(`/admin/patients/${info.row.original.id}`)}
+          />
           {canWrite && (
             <IconButton
               aria-label='Editar paciente'

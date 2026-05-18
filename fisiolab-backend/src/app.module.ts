@@ -7,10 +7,12 @@ import { DataSource } from 'typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import databaseConfig from './config/database.config';
+import { RedisModule } from './common/redis/redis.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { PatientsModule } from './modules/patients/patients.module';
+import { AntecedentesModule } from './modules/antecedentes/antecedentes.module';
 import { RolesGuard } from './common/guards/roles.guard';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
 
@@ -29,10 +31,12 @@ import { AuditInterceptor } from './common/interceptors/audit.interceptor';
         autoLoadEntities: true,
       }),
     }),
+    RedisModule,
     AuthModule,
     UsersModule,
     AuditModule,
     PatientsModule,
+    AntecedentesModule,
   ],
   controllers: [AppController],
   providers: [

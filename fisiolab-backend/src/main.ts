@@ -1,10 +1,12 @@
-import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  app.setGlobalPrefix('api/v1');
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -14,16 +16,16 @@ async function bootstrap() {
     }),
   );
 
-  app.enableCors();
+  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
+
+  const allowedOrigins = process.env.CORS_ORIGINS?.split(',') ?? ['http://localhost:3000'];
+  app.enableCors({ origin: allowedOrigins, credentials: true });
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Fisiolab API')
-    .setDescription('API REST para el sistema de gestión de laboratorio de fisioterapia')
+    .setDescription('API REST — sistema de gestión clínica fisioterapéutica')
     .setVersion('1.0')
-    .addBearerAuth(
-      { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
-      'JWT',
-    )
+    .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 'JWT')
     .build();
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);
@@ -33,7 +35,7 @@ async function bootstrap() {
 
   const port = process.env.PORT ?? 3000;
   await app.listen(port);
-  console.log(`Application running on http://localhost:${port}`);
-  console.log(`Swagger docs: http://localhost:${port}/api/docs`);
+  console.log(`Running: http://localhost:${port}/api/v1`);
+  console.log(`Docs:    http://localhost:${port}/api/docs`);
 }
 bootstrap();

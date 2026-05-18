@@ -54,7 +54,7 @@ export default function Dashboard(props: { [x: string]: any }) {
   return (
     <Box>
       <SidebarContext.Provider value={{ toggleSidebar, setToggleSidebar }}>
-        <Sidebar routes={adminRoutes} display='none' {...rest} />
+        <Sidebar routes={adminRoutes.filter((r) => !r.hidden)} display='none' {...rest} />
         <Box
           float='right'
           minHeight='100vh'

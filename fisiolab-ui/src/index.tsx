@@ -15,8 +15,9 @@ if (!publishableKey) {
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 min cache
-      refetchOnWindowFocus: true,
+      staleTime: 5 * 60 * 1000,   // datos frescos por 5 min
+      gcTime: 10 * 60 * 1000,     // cache en memoria por 10 min
+      refetchOnWindowFocus: false, // no refetch al volver a la pestaña
       retry: 1,
     },
   },

@@ -1,0 +1,25 @@
+Layout Vista paciente 
+
+
+Aplicar UI/UX 
+
+
+Componente tabla 
+
+
+
+
+Modal vista paciente
+
+Mejorar el Header del Modal agregar icono 
+Agregar auto completado de texto para aumentar la velocidad al tomar datos del paciente 
+Agregar diferentes pasis para numero de teléfono 
+Renderizar el componente Calendar 
+Arreglar el dropdown
+Mantener los datos del paciente en memoria si se cierra el modal 
+
+
+Correcciones en el modulo de authenticacion 
+
+Lograr ingresar colocando el correo electrónico y la contraseña 
+Abrir las opciones de inicio de sesión en ventanas pequeñas

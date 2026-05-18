@@ -16,6 +16,7 @@ import MedicoDashboard from 'views/admin/medicoDashboard';
 // Shared views
 import Profile from 'views/admin/profile';
 import PatientsView from 'views/admin/patients';
+import PatientDetail from 'views/admin/patients/PatientDetail';
 
 // Auth views
 import SignInCentered from 'views/auth/signIn';
@@ -60,6 +61,15 @@ const routes: RoutesType[] = [
     icon: <Icon as={MdPeople} width='20px' height='20px' color='inherit' />,
     component: <PatientsView />,
     roles: ['admin', 'fisioterapeuta', 'medico', 'pasante'],
+  },
+  {
+    name: 'Detalle Paciente',
+    layout: '/admin',
+    path: '/patients/:id',
+    icon: '',
+    component: <PatientDetail />,
+    roles: ['admin', 'fisioterapeuta', 'medico', 'pasante'],
+    hidden: true,
   },
 
   // ── Perfil (todos los roles) ──────────────────────────────

@@ -5,16 +5,19 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  NotFoundException,
   Param,
   ParseUUIDPipe,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiNoContentResponse,
   ApiNotFoundResponse,
+  ApiOkResponse,
   ApiOperation,
   ApiParam,
   ApiResponse,
@@ -29,6 +32,8 @@ import { Patient } from './entities/patient.entity';
 import { PatientsService } from './patients.service';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
+import { PatientQueryDto } from './dto/patient-query.dto';
+import { PaginatedResponseDto } from '../../common/dto/pagination.dto';
 
 @ApiTags('Patients')
 @ApiBearerAuth('JWT')
@@ -39,10 +44,11 @@ export class PatientsController {
 
   @Post()
   @Roles(UserRole.ADMIN, UserRole.MEDICO, UserRole.FISIOTERAPEUTA)
-  @ApiOperation({ summary: 'Crear paciente', description: 'Roles: admin, médico, fisioterapeuta' })
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Crear paciente' })
   @ApiResponse({ status: 201, description: 'Paciente creado', type: Patient })
   @ApiResponse({ status: 400, description: 'Datos inválidos o cédula incorrecta' })
-  @ApiResponse({ status: 409, description: 'Cédula o email ya registrado' })
+  @ApiResponse({ status: 409, description: 'Cédula ya registrada' })
   create(@Body() body: CreatePatientDto): Promise<Patient> {
     return this.patientsService.create(body);
   }
@@ -50,17 +56,30 @@ export class PatientsController {
   @Get()
   @Roles(UserRole.ADMIN, UserRole.MEDICO, UserRole.FISIOTERAPEUTA, UserRole.PASANTE)
   @Auditable('LIST_PATIENTS')
-  @ApiOperation({ summary: 'Listar pacientes', description: 'Roles: admin, médico, fisioterapeuta, pasante' })
-  @ApiResponse({ status: 200, description: 'Lista de pacientes', type: [Patient] })
-  findAll(): Promise<Patient[]> {
-    return this.patientsService.findAll();
+  @ApiOperation({ summary: 'Listar pacientes con paginación y filtros' })
+  @ApiOkResponse({ description: 'Lista paginada de pacientes' })
+  findAll(@Query() query: PatientQueryDto): Promise<PaginatedResponseDto<Patient>> {
+    return this.patientsService.findAll(query);
+  }
+
+  @Get('by-cedula/:cedula')
+  @Roles(UserRole.ADMIN, UserRole.MEDICO, UserRole.FISIOTERAPEUTA, UserRole.PASANTE)
+  @Auditable('READ_PATIENT')
+  @ApiOperation({ summary: 'Buscar paciente por cédula exacta' })
+  @ApiParam({ name: 'cedula', example: '1713175071' })
+  @ApiResponse({ status: 200, description: 'Paciente encontrado', type: Patient })
+  @ApiNotFoundResponse({ description: 'Paciente no encontrado' })
+  async findByCedula(@Param('cedula') cedula: string): Promise<Patient> {
+    const patient = await this.patientsService.findByCedula(cedula);
+    if (!patient) throw new NotFoundException(`Patient with cedula ${cedula} not found`);
+    return patient;
   }
 
   @Get(':id')
   @Roles(UserRole.ADMIN, UserRole.MEDICO, UserRole.FISIOTERAPEUTA, UserRole.PASANTE)
   @Auditable('READ_PATIENT')
   @ApiOperation({ summary: 'Obtener paciente por ID' })
-  @ApiParam({ name: 'id', description: 'UUID del paciente', example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890' })
+  @ApiParam({ name: 'id', description: 'UUID del paciente' })
   @ApiResponse({ status: 200, description: 'Paciente encontrado', type: Patient })
   @ApiNotFoundResponse({ description: 'Paciente no encontrado' })
   findOne(@Param('id', ParseUUIDPipe) id: string): Promise<Patient> {
@@ -70,11 +89,10 @@ export class PatientsController {
   @Patch(':id')
   @Roles(UserRole.ADMIN, UserRole.MEDICO, UserRole.FISIOTERAPEUTA)
   @Auditable('UPDATE_PATIENT')
-  @ApiOperation({ summary: 'Actualizar paciente', description: 'Roles: admin, médico, fisioterapeuta' })
-  @ApiParam({ name: 'id', description: 'UUID del paciente', example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890' })
+  @ApiOperation({ summary: 'Actualizar paciente (campos parciales)' })
+  @ApiParam({ name: 'id', description: 'UUID del paciente' })
   @ApiResponse({ status: 200, description: 'Paciente actualizado', type: Patient })
   @ApiNotFoundResponse({ description: 'Paciente no encontrado' })
-  @ApiResponse({ status: 409, description: 'Email ya registrado en otro paciente' })
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() body: UpdatePatientDto,
@@ -86,8 +104,8 @@ export class PatientsController {
   @Roles(UserRole.ADMIN)
   @Auditable('DELETE_PATIENT')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Eliminar paciente', description: 'Roles: solo admin' })
-  @ApiParam({ name: 'id', description: 'UUID del paciente', example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890' })
+  @ApiOperation({ summary: 'Eliminar paciente (solo admin)' })
+  @ApiParam({ name: 'id', description: 'UUID del paciente' })
   @ApiNoContentResponse({ description: 'Paciente eliminado' })
   @ApiNotFoundResponse({ description: 'Paciente no encontrado' })
   remove(@Param('id', ParseUUIDPipe) id: string): Promise<void> {

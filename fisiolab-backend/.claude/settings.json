@@ -38,7 +38,8 @@
       "Read(//d/Proyectos/Web/fisiolab-system/**)",
       "Bash(pnpm migration:run)",
       "Bash(node -e \"require\\('dotenv'\\).config\\(\\); const url = process.env.DATABASE_URL; try { const u = new URL\\(url\\); console.log\\('host:', u.hostname\\); console.log\\('db:', u.pathname\\); console.log\\('has sslmode:', url.includes\\('sslmode'\\)\\); } catch\\(e\\) { console.log\\('URL parse error:', e.message\\); }\")",
-      "Bash(pnpm exec *)"
+      "Bash(pnpm exec *)",
+      "Bash(pnpm list *)"
     ]
   }
 }

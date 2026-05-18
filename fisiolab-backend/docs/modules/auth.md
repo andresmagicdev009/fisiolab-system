@@ -88,6 +88,18 @@ Declara qué roles pueden acceder al endpoint. Siempre se usa junto con `JwtAuth
 findAll() { ... }
 ```
 
+### `@CurrentUser()`
+
+Extrae `req.user` como parámetro del método. Requiere que `JwtAuthGuard` haya procesado el request primero.
+
+```typescript
+@Get('profile')
+@UseGuards(JwtAuthGuard)
+getProfile(@CurrentUser() user: UserPayload) {
+  return user; // { userId, email, role }
+}
+```
+
 ### `@Auditable(event: string)`
 
 Registra un evento en `audit_logs` cuando el endpoint es invocado. Independiente de auth.

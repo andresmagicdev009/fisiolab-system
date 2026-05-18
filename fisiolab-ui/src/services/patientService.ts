@@ -3,10 +3,17 @@ import apiClient from './apiClient';
 
 const BASE = '/patients';
 
+interface PaginatedResponse {
+  data: Patient[];
+  meta: { total: number; page: number; limit: number; totalPages: number };
+}
+
 export const patientService = {
   getAll: async (): Promise<Patient[]> => {
-    const { data } = await apiClient.get<Patient[]>(BASE);
-    return data;
+    const { data } = await apiClient.get<PaginatedResponse>(BASE, {
+      params: { page: 1, limit: 100 },
+    });
+    return data.data;
   },
 
   getById: async (id: string): Promise<Patient> => {
