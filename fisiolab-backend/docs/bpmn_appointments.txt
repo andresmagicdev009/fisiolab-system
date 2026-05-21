@@ -1,0 +1,67 @@
+@startuml
+left to right direction
+
+rectangle "Secretaría / Admin" {
+  mxgraph.bpmn.event.start "Solicitud\ncita" as start
+
+  rectangle "Verificar\npaciente\ny tarjetero" as verify
+  mxgraph.bpmn.gateway2.exclusive "¿Tarjetero\nactivo?" as gw_tarjetero
+  rectangle "Notificar\nsin tarjetero" as notify_no_tarjetero
+  mxgraph.bpmn.event.errorEnd "Sin tarjetero" as end_no_tarjetero
+
+  rectangle "Registrar cita\n(tipo + fecha +\nprofesional)" as register
+  mxgraph.bpmn.gateway2.exclusive "¿Tipo\ncita?" as gw_tipo
+  rectangle "Cita\nCONFIRMADA" as confirmed
+
+  mxgraph.bpmn.event.timerCatching "Día de\ncita" as timer_day
+  mxgraph.bpmn.gateway2.exclusive "¿Paciente\nse presenta?" as gw_presenta
+  rectangle "Cancelar cita\n(CANCELADA)" as cancel
+  mxgraph.bpmn.event.end "Cita\ncancelada" as end_cancel
+}
+
+rectangle "Profesional (Médico / Fisioterapeuta)" {
+  mxgraph.bpmn.gateway2.exclusive "Seleccionar\nepisodio" as gw_episode
+  rectangle "Abrir episodio\nnuevo" as open_episode
+  rectangle "Seleccionar\nepisodio activo" as select_episode
+  rectangle "Evaluar +\nregistrar\nnota SOAP" as soap
+  mxgraph.bpmn.gateway2.exclusive "¿Alta\nmédica?" as gw_alta
+  rectangle "Cerrar\nepisodio" as close_episode
+  mxgraph.bpmn.gateway2.parallel "Merge\nalta" as merge_alta
+  rectangle "Marcar cita\nCOMPLETADA" as complete
+}
+
+rectangle "Sistema FisioLab" {
+  rectangle "Generar cobro\nde sesión" as payment
+  mxgraph.bpmn.event.end "Cita\ncompletada" as end_ok
+}
+
+' ─── Secretaría flow ───────────────────────────────────────────
+start --> verify
+verify --> gw_tarjetero
+gw_tarjetero --> notify_no_tarjetero : "No"
+notify_no_tarjetero --> end_no_tarjetero
+gw_tarjetero --> register : "Sí"
+register --> gw_tipo
+gw_tipo --> confirmed : "PRIMERA_VEZ\nSEGUIMIENTO\nINTERCONSULTA"
+confirmed --> timer_day
+timer_day --> gw_presenta
+gw_presenta --> cancel : "No asiste"
+cancel --> end_cancel
+gw_presenta --> gw_episode : "Sí"
+
+' ─── Profesional flow ───────────────────────────────────────────
+gw_episode --> open_episode : "PRIMERA_VEZ"
+gw_episode --> select_episode : "SEGUIMIENTO /\nINTERCONSULTA"
+open_episode --> soap
+select_episode --> soap
+soap --> gw_alta
+gw_alta --> close_episode : "Sí"
+gw_alta --> merge_alta : "No"
+close_episode --> merge_alta
+merge_alta --> complete
+
+' ─── Sistema flow ───────────────────────────────────────────────
+complete ..> payment
+payment --> end_ok
+
+@enduml

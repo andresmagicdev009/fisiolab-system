@@ -9,6 +9,7 @@ import {
   Text,
   useDisclosure,
 } from '@chakra-ui/react';
+import { useUser } from '@clerk/clerk-react';
 import AntecedentesPanel from 'layouts/patients/AntecedentesPanel';
 import PatientCard from 'layouts/patients/PatientCard';
 import PatientModal from 'layouts/patients/PatientModal';
@@ -19,10 +20,16 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAntecedentesResumen } from 'hooks/useAntecedentes';
 import { usePatient, useUpdatePatient } from 'hooks/usePatients';
 import { CreatePatientData } from 'types/models';
+import { getUserRole } from 'utils/auth';
 
 export default function PatientDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useUser();
+  const role = getUserRole(user) ?? '';
+  const isAdmin = role === 'admin';
+  const canWrite = ['admin', 'medico', 'fisioterapeuta'].includes(role);
+
   const { data: patient, isLoading, error } = usePatient(id!);
   const { data: resumen } = useAntecedentesResumen(id!);
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -81,20 +88,20 @@ export default function PatientDetail() {
       <Grid
         templateColumns={{ base: '1fr', xl: '360px 1fr' }}
         gap='20px'
-        alignItems='start'>
-        {/* Left: ficha + antecedentes */}
-        <GridItem>
-          <Box position={{ xl: 'sticky' }} top='90px'>
-            <PatientCard patient={patient} onEdit={onOpen} />
-            <Box mt='16px'>
-              <AntecedentesPanel patient={patient} resumen={resumen} />
-            </Box>
-          </Box>
+        alignItems='stretch'>
+        {/* Row 1 Left: ficha del paciente */}
+        <GridItem display='flex' flexDirection='column'>
+          <PatientCard patient={patient} onEdit={onOpen} h='100%' />
         </GridItem>
 
-        {/* Right: tabs */}
-        <GridItem>
+        {/* Row 1 Right: tabs */}
+        <GridItem display='flex' flexDirection='column'>
           <PatientTabs patient={patient} />
+        </GridItem>
+
+        {/* Row 2 Left: antecedentes (independiente, no afecta altura del tab) */}
+        <GridItem>
+          <AntecedentesPanel patient={patient} resumen={resumen} />
         </GridItem>
       </Grid>
 

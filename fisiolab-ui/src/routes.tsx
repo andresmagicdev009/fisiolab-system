@@ -5,6 +5,7 @@ import {
   MdLock,
   MdDashboard,
   MdPeople,
+  MdCalendarMonth,
 } from 'react-icons/md';
 import { Navigate } from 'react-router-dom';
 
@@ -17,6 +18,7 @@ import MedicoDashboard from 'views/admin/medicoDashboard';
 import Profile from 'views/admin/profile';
 import PatientsView from 'views/admin/patients';
 import PatientDetail from 'views/admin/patients/PatientDetail';
+import AppointmentsView from 'views/admin/appointments';
 
 // Auth views
 import SignInCentered from 'views/auth/signIn';
@@ -51,6 +53,16 @@ const routes: RoutesType[] = [
     icon: <Icon as={MdHome} width='20px' height='20px' color='inherit' />,
     component: <MedicoDashboard />,
     roles: ['medico'],
+  },
+
+  // ── Citas ─────────────────────────────────────────────────
+  {
+    name: 'Citas',
+    layout: '/admin',
+    path: '/appointments',
+    icon: <Icon as={MdCalendarMonth} width='20px' height='20px' color='inherit' />,
+    component: <AppointmentsView />,
+    roles: ['admin', 'fisioterapeuta', 'medico', 'pasante'],
   },
 
   // ── Pacientes ────────────────────────────────────────────

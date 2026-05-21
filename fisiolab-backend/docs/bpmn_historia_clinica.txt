@@ -1,0 +1,54 @@
+@startuml
+left to right direction
+
+' Definición de elementos usando formas nativas estables
+circle "Cita\nConfirmada" as start
+rectangle "Abrir episodio\nclínico" as episodio
+rectangle "Anamnesis\n+ SOAP Note" as soap
+
+usecase "¿Evaluación\nfísica?" as gwEval
+rectangle "Evaluación\nfísica" as eval
+
+usecase "¿Interconsulta?" as gwInter
+rectangle "Solicitar\ninterconsulta" as inter
+
+rectangle "Plan de\ntratamiento" as plan
+rectangle "Asignar\nejercicios" as ejercicios
+
+usecase "¿Alta\nmédica?" as gwAlta
+rectangle "Nueva\nsesión" as sesion
+rectangle "Cerrar\nepisodio" as cierre
+rectangle "Generar\nfactura SRI" as factura
+circle "Episodio\nCerrado" as end
+
+' Flujo principal del proceso
+start --> episodio
+episodio --> soap
+soap --> gwEval
+
+' Bifurcación Evaluación Física
+gwEval --> eval : "Sí"
+gwEval --> gwInter : "No"
+eval --> gwInter
+
+' Bifurcación Interconsulta
+gwInter --> inter : "Sí"
+gwInter --> plan : "No"
+inter --> plan
+
+' Tratamiento y Alta
+plan --> ejercicios
+ejercicios --> gwAlta
+
+' Decisiones de Alta / Ciclo de retorno
+gwAlta --> sesion : "No"
+gwAlta --> cierre : "Sí"
+
+' Retorno al SOAP para la nueva sesión
+sesion --> soap
+
+' Fase Final y Facturación SRI
+cierre --> factura
+factura --> end
+
+@enduml

@@ -1,0 +1,32 @@
+  @startuml
+  left to right direction
+
+  mxgraph.bpmn.event.start "Inicio" as start
+  rectangle "Ingresar datos\npaciente" as ingresar
+  rectangle "Validar\ncédula EC" as validar
+  mxgraph.bpmn.gateway2.exclusive "¿Cédula\nválida?" as gwCedula
+  rectangle "Corregir\ncédula" as corregir
+  rectangle "Generar código\nHC-YYYY-NNNN\n(Tarjetero)" as tarjetero
+  rectangle "Registrar antecedentes\nheredofamiliares" as hf
+  rectangle "Registrar antecedentes\npatológicos" as pat
+  rectangle "Registrar antecedentes\nno patológicos" as nopat
+  mxgraph.bpmn.gateway2.exclusive "¿Género\nFemenino?" as gwGenero
+  rectangle "Registrar antecedentes\ngineco-obstétricos" as gineco
+  mxgraph.bpmn.gateway2.parallel "Merge" as merge
+  mxgraph.bpmn.event.end "Paciente\nActivo" as end
+
+  start --> ingresar
+  ingresar --> validar
+  validar --> gwCedula
+  gwCedula --> tarjetero : "Sí"
+  gwCedula --> corregir : "No"
+  corregir --> ingresar
+  tarjetero --> hf
+  hf --> pat
+  pat --> nopat
+  nopat --> gwGenero
+  gwGenero --> gineco : "Sí"
+  gwGenero --> merge : "No"
+  gineco --> merge
+  merge --> end
+  @enduml

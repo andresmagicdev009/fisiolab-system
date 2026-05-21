@@ -28,6 +28,7 @@ import PatientModal from 'layouts/patients/PatientModal';
 import PatientTable from 'layouts/patients/PatientTable';
 import React, { useMemo, useState } from 'react';
 import { MdFemale, MdMale, MdPeople, MdPersonAdd, MdSearch } from 'react-icons/md';
+import { tarjeteroService } from 'services/tarjeteroService';
 import { getUserRole } from 'utils/auth';
 import { CreatePatientData, Genero, Patient } from 'types/models';
 
@@ -103,7 +104,23 @@ export default function PatientsView() {
     if (selectedPatient) {
       await updateMutation.mutateAsync({ id: selectedPatient.id, payload: data });
     } else {
-      await createMutation.mutateAsync(data);
+      const newPatient = await createMutation.mutateAsync(data);
+      // BPMN onboarding: auto-crear tarjetero índice tras registro de paciente
+      try {
+        await tarjeteroService.create(newPatient.id, {});
+      } catch (err: any) {
+        // 409 = ya existe (no debería ocurrir en primer registro, pero es idempotente)
+        if (err?.response?.status !== 409) {
+          toast({
+            title: 'Paciente creado',
+            description: 'No se pudo generar el código HC. Ábralo desde el perfil del paciente.',
+            status: 'warning',
+            duration: 6000,
+            isClosable: true,
+            position: 'top-right',
+          });
+        }
+      }
     }
   };
 

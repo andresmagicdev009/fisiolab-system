@@ -1,4 +1,14 @@
 @import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400;1,500;1,700&display=swap");
+
+/*
+  Fuerza el scrollbar a estar siempre visible en el viewport.
+  Previene el layout shift del navbar cuando Chakra UI Modal bloquea el scroll
+  del body — react-remove-scroll no tiene nada que compensar.
+*/
+html {
+  overflow-y: scroll;
+}
+
 body {
   font-family: "DM Sans", sans-serif;
 }

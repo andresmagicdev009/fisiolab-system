@@ -13,6 +13,20 @@ import { UsersModule } from './modules/users/users.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { PatientsModule } from './modules/patients/patients.module';
 import { AntecedentesModule } from './modules/antecedentes/antecedentes.module';
+import { TarjeteroIndiceModule } from './modules/tarjetero-indice/tarjetero-indice.module';
+import { ClinicalEpisodesModule } from './modules/clinical-episodes/clinical-episodes.module';
+import { SoapNotesModule } from './modules/soap-notes/soap-notes.module';
+import { PhysicalEvaluationsModule } from './modules/physical-evaluations/physical-evaluations.module';
+import { TreatmentPlansModule } from './modules/treatment-plans/treatment-plans.module';
+import { ExercisesModule } from './modules/exercises/exercises.module';
+import { AppointmentsModule } from './modules/appointments/appointments.module';
+import { InterconsultsModule } from './modules/interconsults/interconsults.module';
+import { SessionsModule } from './modules/sessions/sessions.module';
+import { HistoriaClinicaModule } from './modules/historia-clinica/historia-clinica.module';
+import { PatientFilesModule } from './modules/patient-files/patient-files.module';
+import { PrescriptionsModule } from './modules/prescriptions/prescriptions.module';
+import { SessionPaymentsModule } from './modules/session-payments/session-payments.module';
+import { InvoicesModule } from './modules/invoices/invoices.module';
 import { RolesGuard } from './common/guards/roles.guard';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
 
@@ -37,6 +51,20 @@ import { AuditInterceptor } from './common/interceptors/audit.interceptor';
     AuditModule,
     PatientsModule,
     AntecedentesModule,
+    TarjeteroIndiceModule,
+    ClinicalEpisodesModule,
+    SoapNotesModule,
+    PhysicalEvaluationsModule,
+    TreatmentPlansModule,
+    ExercisesModule,
+    AppointmentsModule,
+    InterconsultsModule,
+    SessionsModule,
+    HistoriaClinicaModule,
+    PatientFilesModule,
+    PrescriptionsModule,
+    SessionPaymentsModule,
+    InvoicesModule,
   ],
   controllers: [AppController],
   providers: [

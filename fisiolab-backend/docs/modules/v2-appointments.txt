@@ -1,0 +1,168 @@
+  ---
+  Prompt — Spec de correcciones módulo appointments
+
+  Módulo appointments (NestJS + TypeORM + PostgreSQL)
+  Stack NestJS, TypeORM, PostgreSQL, Redis cache
+
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  CAMBIOS EN ESTADO MÁQUINA
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Estado actual
+    CONFIRMADA → CANCELADA  COMPLETADA
+
+  Estado corregido — agregar 2 estados nuevos
+    CONFIRMADA → COMPLETADA     POST complete
+    CONFIRMADA → CANCELADA      POST cancel
+    CONFIRMADA → REPROGRAMADA   POST reschedule  ← NUEVO
+    CONFIRMADA → NO_ASISTIO     POST no-show     ← NUEVO
+
+  Reglas
+    - COMPLETADA, CANCELADA, REPROGRAMADA, NO_ASISTIO → todos inmutables
+    - PATCH solo funciona en estado CONFIRMADA (sin cambio)
+    - PATCH es para ajustes menores (hora, duración, notas) — sin audit trail
+    - reschedule es para cambio de fecha formal — genera audit trail
+
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  CAMPOS NUEVOS EN appointments
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  reprogramadaDeId UUID NULL FK → appointments(id)   -- cita original que generó ésta
+  nuevaCitaId      UUID NULL FK → appointments(id)   -- cita que reemplaza a ésta
+  motivoReprogramacion VARCHAR(500) NULL
+
+  Migración
+  ALTER TABLE appointments
+    ADD COLUMN reprogramada_de_id UUID NULL REFERENCES appointments(id) ON DELETE SET NULL,
+    ADD COLUMN nueva_cita_id      UUID NULL REFERENCES appointments(id) ON DELETE SET NULL,
+    ADD COLUMN motivo_reprogramacion VARCHAR(500) NULL;
+
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ENDPOINT NUEVO POST appointmentsidreschedule
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Body
+    scheduledAt string      -- ISO 8601, no pasado, requerido
+    motivo string          -- max 500
+
+  Lógica (en transacción)
+    1. Validar estado = CONFIRMADA (422 si no)
+    2. Validar scheduledAt no pasado (400)
+    3. Detectar conflicto de horario del profesional (409 si hay solapamiento)
+    4. Crear nueva cita
+         { ...cita_original (patientId, professionalId, tipoCita, motivo),
+           scheduledAt dto.scheduledAt,
+           estado CONFIRMADA,
+           reprogramadaDeId cita_original.id }
+    5. Marcar cita original
+         { estado REPROGRAMADA,
+           nuevaCitaId nueva_cita.id,
+           motivoReprogramacion dto.motivo }
+    6. Invalidar cache apptid{id} y apptpatient{patientId}
+
+  Response 200
+    { original Appointment(REPROGRAMADA), nueva Appointment(CONFIRMADA) }
+
+  Roles WRITERS (ADMIN, MEDICO, FISIOTERAPEUTA)
+
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ENDPOINT NUEVO POST appointmentsidno-show
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Body vacío (no requiere campos)
+
+  Lógica
+    1. Validar estado = CONFIRMADA (422 si no)
+    2. estado → NO_ASISTIO
+    3. NO crear SessionPayment (sin atención = sin cobro)
+    4. Invalidar cache
+
+  Response 200 Appointment(NO_ASISTIO)
+  Roles WRITERS
+
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ENDPOINT MODIFICADO POST appointmentsidcomplete
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Body actualizado
+    monto number            -- requerido,  0
+    episodeId string       -- requerido si tipoCita=SEGUIMIENTOINTERCONSULTA
+    planId string          -- opcional — solo si hay plan activo en el episodio
+
+  Lógica según 3 casos
+
+    CASO 1 — tipoCita=PRIMERA_VEZ (sin episodio aún)
+      → estado = COMPLETADA
+      → SessionPayment { monto, estadoPago PENDIENTE }
+      → episodeId = null (profesional abre episodio después)
+      → El episodio se vincula post-hoc via episode.appointmentId al crearlo
+
+    CASO 2 — SEGUIMIENTO, episodeId presente, sin planId
+      → estado = COMPLETADA
+      → Validar episodio pertenece al paciente (422 si no)
+      → SessionPayment { monto, estadoPago PENDIENTE }
+      → appointment.episodeId = dto.episodeId
+      → NO crear Session (profesional crea SOAP directo después)
+
+    CASO 3 — SEGUIMIENTO, episodeId + planId presentes
+      → estado = COMPLETADA
+      → Validar episodio pertenece al paciente (422 si no)
+      → Validar plan pertenece al episodio y está activo (422 si no)
+      → SessionPayment { monto, estadoPago PENDIENTE }
+      → appointment.episodeId = dto.episodeId
+      → AUTO crear Session {
+          episodeId, planId, appointmentId id,
+          tipo FISIOTERAPIA, estado PROGRAMADA,
+          profesionalId appointment.professionalId,
+          fechaSesion DATE(appointment.scheduledAt)
+        }
+
+  Response incluye sessionId (null en casos 1 y 2, uuid en caso 3)
+
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  HISTORIAL DE CITAS — GET patientsidappointments
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Query enriquecido (LEFT JOIN, sin campo nuevo en tabla)
+    LEFT JOIN clinical_episodes e   ON a.episode_id = e.id
+    LEFT JOIN sessions s            ON s.appointment_id = a.id
+    LEFT JOIN treatment_plans tp    ON s.plan_id = tp.id
+    LEFT JOIN session_payments sp   ON a.session_payment_id = sp.id
+    LEFT JOIN appointments orig     ON a.reprogramada_de_id = orig.id
+    LEFT JOIN appointments nueva    ON a.nueva_cita_id = nueva.id
+
+  Cada Appointment en respuesta incluye
+    episode    { codigoHc, motivoConsulta, estado }  null
+    session    { id, numeroSesion, estado, plan { nombre } }  null
+    payment    { monto, estadoPago }  null
+    reprogramadaDe { id, scheduledAt }  null
+    nuevaCita  { id, scheduledAt, estado }  null
+
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  QUERY PARAMS NUEVOS en listados
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Agregar a AppointmentQueryDto
+    estado ahora acepta CONFIRMADACANCELADACOMPLETADAREPROGRAMADANO_ASISTIO
+
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ARCHIVOS A MODIFICAR  CREAR
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Backend
+    migrationsXXXX-AddRescheduleFieldsToAppointments.ts
+    entitiesappointment.entity.ts         — 2 estados nuevos + 3 campos nuevos
+    dtoreschedule-appointment.dto.ts      — NUEVO
+    dtocomplete-appointment.dto.ts        — agregar planId opcional
+    dtoappointment-query.dto.ts           — estados nuevos en enum
+    appointments.service.ts               — reschedule(), noShow(), complete() actualizado
+    appointments.controller.ts            — POST reschedule, POST no-show
+    patient-appointments.controller.ts    — query enriquecido con JOINs
+
+  Frontend
+    typesmodels.ts                        — EstadoCita actualizado
+    servicesappointmentService.ts         — reschedule(), noShow()
+    hooksuseAppointments.ts               — useRescheduleAppointment, useNoShowAppointment
+    layoutspatientsAppointmentFormModal  — lógica 3 casos en complete
+    layoutspatientsCitasTab.tsx          — botón Reagendar + No asistió
+    layoutspatientsAppointmentCard.tsx   — badge REPROGRAMADANO_ASISTIO + link cadena

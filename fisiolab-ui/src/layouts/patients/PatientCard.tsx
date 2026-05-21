@@ -9,12 +9,16 @@ import {
   Text,
   Tooltip,
   useColorModeValue,
+  useToast,
 } from '@chakra-ui/react';
 import Card from 'components/card/Card';
 import Button from 'components/ui/Button';
+import { useTarjetero } from 'hooks/useTarjetero';
 import React, { useState } from 'react';
-import { MdCheck, MdContentCopy, MdEdit, MdEmail, MdLocationOn, MdPhone, MdPhoneCallback, MdWork } from 'react-icons/md';
-import { EstadoCivil, Genero, Patient } from 'types/models';
+import { MdCheck, MdContentCopy, MdDownload, MdEdit, MdEmail, MdFolderOpen, MdLocationOn, MdPhone, MdPhoneCallback, MdWork } from 'react-icons/md';
+import { historiaClinicaService } from 'services/historiaClinicaService';
+import { generateHistoriaPdf } from 'utils/generateHistoriaPdf';
+import { EstadoCivil, EstadoTarjetero, Genero, Patient } from 'types/models';
 
 function calcularEdad(fechaNacimiento: string): number {
   const hoy = new Date();
@@ -39,6 +43,12 @@ const AVATAR_GRADIENT: Record<Genero, string> = {
   [Genero.MASCULINO]: 'linear(to-br, blue.400, brand.500)',
   [Genero.FEMENINO]: 'linear(to-br, pink.400, purple.500)',
   [Genero.OTRO]: 'linear(to-br, purple.400, brand.500)',
+};
+
+const TARJETERO_DOT: Record<EstadoTarjetero, string> = {
+  [EstadoTarjetero.ACTIVO]: '#68D391',
+  [EstadoTarjetero.INACTIVO]: '#F6AD55',
+  [EstadoTarjetero.ARCHIVADO]: '#A0AEC0',
 };
 
 const ESTADO_CIVIL_LABEL: Partial<Record<EstadoCivil, string>> = {
@@ -123,19 +133,44 @@ function InfoRow({ icon, label, value, copyable }: InfoRowProps) {
 interface PatientCardProps {
   patient: Patient;
   onEdit: () => void;
+  [x: string]: any;
 }
 
-export default function PatientCard({ patient, onEdit }: PatientCardProps) {
+export default function PatientCard({ patient, onEdit, ...rest }: PatientCardProps) {
+  const { data: tarjetero } = useTarjetero(patient.id);
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const toast = useToast();
+
+  const handleDownloadPdf = async () => {
+    setPdfLoading(true);
+    try {
+      const data = await historiaClinicaService.getResumen(patient.id);
+      generateHistoriaPdf(data, `${patient.nombres} ${patient.apellidos}`);
+    } catch {
+      toast({
+        title: 'Error al generar PDF',
+        description: 'No se pudo descargar la historia clínica.',
+        status: 'error',
+        duration: 4000,
+        isClosable: true,
+      });
+    } finally {
+      setPdfLoading(false);
+    }
+  };
+
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const statBg = useColorModeValue('gray.50', 'navy.700');
   const dividerColor = useColorModeValue('gray.100', 'whiteAlpha.100');
+  const hcBg = useColorModeValue('brand.50', 'navy.700');
+  const hcBorder = useColorModeValue('brand.100', 'brand.800');
 
   const edad = calcularEdad(patient.fechaNacimiento);
   const { label: generoLabel, colorScheme: generoColor } = GENERO_BADGE[patient.genero];
   const ciudad = [patient.ciudad, patient.provincia].filter(Boolean).join(', ');
 
   return (
-    <Card p='24px'>
+    <Card p='24px' {...rest}>
       {/* Avatar + nombre */}
       <Flex direction='column' align='center' textAlign='center' mb='20px'>
         <Box bgGradient={AVATAR_GRADIENT[patient.genero]} borderRadius='full' p='3px' mb='14px'>
@@ -154,7 +189,7 @@ export default function PatientCard({ patient, onEdit }: PatientCardProps) {
           </Text>
           <CopyButton value={`${patient.nombres} ${patient.apellidos}`} />
         </Flex>
-        <Flex align='center' gap='2' flexWrap='wrap' justify='center'>
+        <Flex align='center' gap='2' flexWrap='wrap' justify='center' mb='8px'>
           <Badge
             fontFamily='mono'
             fontSize='xs'
@@ -168,6 +203,43 @@ export default function PatientCard({ patient, onEdit }: PatientCardProps) {
             {generoLabel}
           </Badge>
         </Flex>
+
+        {/* Código HC */}
+        {tarjetero ? (
+          <Flex
+            align='center'
+            gap='8px'
+            bg={hcBg}
+            border='1px solid'
+            borderColor={hcBorder}
+            borderRadius='10px'
+            px='12px'
+            py='7px'>
+            <Box
+              w='7px' h='7px' borderRadius='full'
+              bg={TARJETERO_DOT[tarjetero.estado]}
+              flexShrink={0}
+            />
+            <Icon as={MdFolderOpen} color='brand.500' w='13px' h='13px' flexShrink={0} />
+            <Text fontFamily='mono' fontSize='sm' fontWeight='800' color='brand.500' flex={1}>
+              {tarjetero.codigoHc}
+            </Text>
+            <CopyButton value={tarjetero.codigoHc} />
+          </Flex>
+        ) : (
+          <Flex
+            align='center'
+            gap='6px'
+            bg={statBg}
+            borderRadius='10px'
+            px='12px'
+            py='7px'>
+            <Icon as={MdFolderOpen} color='secondaryGray.400' w='13px' h='13px' />
+            <Text fontSize='xs' color='secondaryGray.400' fontWeight='600'>
+              Sin historia clínica
+            </Text>
+          </Flex>
+        )}
       </Flex>
 
       {/* Stats rápidos */}
@@ -219,6 +291,19 @@ export default function PatientCard({ patient, onEdit }: PatientCardProps) {
         leftIcon={<Icon as={MdEdit} />}
         onClick={onEdit}>
         Editar datos
+      </Button>
+
+      <Button
+        mt='8px'
+        variant='outline'
+        size='sm'
+        w='100%'
+        leftIcon={<Icon as={MdDownload} />}
+        onClick={handleDownloadPdf}
+        isLoading={pdfLoading}
+        loadingText='Generando PDF...'
+        isDisabled={!tarjetero}>
+        Descargar Historia Clínica PDF
       </Button>
     </Card>
   );

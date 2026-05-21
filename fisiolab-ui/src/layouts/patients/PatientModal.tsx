@@ -190,7 +190,14 @@ export default function PatientModal({
     }
   }, [patient, isOpen, reset]);
 
-  const onSubmit = async (data: CreatePatientData) => {
+  const onSubmit = async (formData: CreatePatientData) => {
+    // @IsOptional() en NestJS solo omite validación si el valor es undefined/null.
+    // React Hook Form devuelve '' para inputs vacíos → falla @IsEmail, @MinLength, etc.
+    // Solución: eliminar claves con string vacío antes de enviar.
+    const data = Object.fromEntries(
+      Object.entries(formData).filter(([, v]) => v !== '' && v !== undefined && v !== null),
+    ) as CreatePatientData;
+
     try {
       await onSave(data);
       toast({
