@@ -10,19 +10,20 @@ import {
 import { Navigate } from 'react-router-dom';
 
 // Dashboard views per role
-import AdminDashboard from 'views/admin/adminDashboard';
-import FisioDashboard from 'views/admin/fisioDashboard';
-import MedicoDashboard from 'views/admin/medicoDashboard';
+import AdminDashboard from 'pages/admin/adminDashboard';
+import FisioDashboard from 'pages/professional/fisioDashboard';
+import MedicoDashboard from 'pages/professional/medicoDashboard';
 
 // Shared views
-import Profile from 'views/admin/profile';
-import PatientsView from 'views/admin/patients';
-import PatientDetail from 'views/admin/patients/PatientDetail';
-import AppointmentsView from 'views/admin/appointments';
+import Profile from 'pages/professional/profile';
+import PatientsView from 'pages/professional/patients';
+import PatientDetail from 'pages/professional/patients/PatientDetail';
+
 
 // Auth views
-import SignInCentered from 'views/auth/signIn';
-import AuthCallback from 'views/auth/callback';
+import SignInCentered from 'pages/auth/signIn';
+import AuthCallback from 'pages/auth/callback';
+import { CalendarPreview } from 'pages/preview/CalendarPreview';
 
 const routes: RoutesType[] = [
   // ── Admin ────────────────────────────────────────────────
@@ -55,15 +56,7 @@ const routes: RoutesType[] = [
     roles: ['medico'],
   },
 
-  // ── Citas ─────────────────────────────────────────────────
-  {
-    name: 'Citas',
-    layout: '/admin',
-    path: '/appointments',
-    icon: <Icon as={MdCalendarMonth} width='20px' height='20px' color='inherit' />,
-    component: <AppointmentsView />,
-    roles: ['admin', 'fisioterapeuta', 'medico', 'pasante'],
-  },
+  
 
   // ── Pacientes ────────────────────────────────────────────
   {
@@ -116,6 +109,13 @@ const routes: RoutesType[] = [
     icon: <Icon as={MdLock} width='20px' height='20px' color='inherit' />,
     component: <AuthCallback />,
   },
+  {
+    name: 'Calendar Preview Test',
+    layout: "/preview",
+    path: "/preview/calendar",
+    icon: <Icon as={MdCalendarMonth} width='20px' height='20px' color='inherit' />,
+    component: <CalendarPreview />,
+  }
 ];
 
 export default routes;

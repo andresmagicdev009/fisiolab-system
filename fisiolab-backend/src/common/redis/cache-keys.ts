@@ -31,6 +31,11 @@ export const CK = {
   // appointments
   APPT_ID: (id: string) => `appt:id:${id}`,
   APPT_PATIENT: (pid: string) => `appt:patient:${pid}`,
+  // availability
+  AVAIL_PROFESSIONAL: (pid: string) => `avail:professional:${pid}`,
+  // slots (TTL 60s — alta volatilidad)
+  SLOTS: (profId: string, start: string, end: string, tipo: string) =>
+    `slots:${profId}:${start}:${end}:${tipo}`,
   // interconsults
   IC_ID: (id: string) => `ic:id:${id}`,
   // prescriptions
@@ -39,6 +44,8 @@ export const CK = {
   PAYMENT_ID: (id: string) => `payment:id:${id}`,
   // invoices
   INVOICE_ID: (id: string) => `invoice:id:${id}`,
+  // user profile (includes hasAvailability flag — invalidated by availability mutations)
+  USER_PROFILE: (clerkId: string) => `user:profile:${clerkId}`,
 } as const;
 
 export const TTL = {

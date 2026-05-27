@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc *)",
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(git *)",
+      "Bash(npx --prefix \"D:/Proyectos/Web/fisiolab-system/fisiolab-ui\" tsc --noEmit)",
+      "Bash(npx skills *)",
+      "Bash(Get-ChildItem -Path \"D:\\\\Proyectos\\\\Web\\\\fisiolab-system\\\\fisiolab-ui\\\\src\" -Recurse -File)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(Sort-Object)",
+      "Bash(echo \"failed: $?\")"
+    ]
+  }
+}

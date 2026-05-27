@@ -53,12 +53,29 @@ export class AppointmentsController {
   @Roles(...WRITERS)
   @HttpCode(HttpStatus.CREATED)
   @Auditable('CREATE_APPOINTMENT')
-  @ApiOperation({ summary: 'Crear cita' })
+  @ApiOperation({
+    summary:
+      'Crear cita (capacity-aware: respeta atención paralela hasta User.capacidadAtencionParalela)',
+  })
   @ApiResponse({ status: 201, description: 'Cita creada', type: Appointment })
   @ApiNotFoundResponse({ description: 'Paciente no encontrado' })
-  @ApiConflictResponse({ description: 'Profesional con cita solapada' })
+  @ApiConflictResponse({ description: 'Capacidad alcanzada — payload incluye suggestedSlots[]' })
   @ApiResponse({ status: 422, description: 'Paciente sin tarjetero activo' })
   create(@Body() dto: CreateAppointmentDto): Promise<Appointment> {
+    return this.service.create(dto);
+  }
+
+  @Post('free')
+  @Roles(...WRITERS)
+  @HttpCode(HttpStatus.CREATED)
+  @Auditable('CREATE_FREE_APPOINTMENT')
+  @ApiOperation({
+    summary:
+      'Crear cita suelta sin vincular a plan/sesión (alias de POST /appointments). Capacity-aware.',
+  })
+  @ApiResponse({ status: 201, description: 'Cita suelta creada', type: Appointment })
+  @ApiConflictResponse({ description: 'Capacidad alcanzada — suggestedSlots[]' })
+  createFree(@Body() dto: CreateAppointmentDto): Promise<Appointment> {
     return this.service.create(dto);
   }
 

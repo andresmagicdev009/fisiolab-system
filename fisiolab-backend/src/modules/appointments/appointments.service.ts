@@ -16,7 +16,7 @@ import { SessionsService } from '../sessions/sessions.service';
 import { RedisService } from '../../common/redis/redis.service';
 import { CK, TTL } from '../../common/redis/cache-keys';
 import { PaginatedResponseDto } from '../../common/dto/pagination.dto';
-import { Appointment, EstadoCita, TipoCita } from './entities/appointment.entity';
+import { Appointment, AppointmentBookingType, EstadoCita, TipoCita } from './entities/appointment.entity';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { CancelAppointmentDto } from './dto/cancel-appointment.dto';
@@ -26,6 +26,8 @@ import { RescheduleAppointmentDto } from './dto/reschedule-appointment.dto';
 import { AppointmentQueryDto } from './dto/appointment-query.dto';
 import { EnrichedAppointment } from './dto/enriched-appointment.dto';
 import { AppointmentStateFactory } from './factories/appointment-state.factory';
+import { WaitingListService } from './waiting-list.service';
+import { SlotFinderService } from './slot-finder.service';
 
 const REQUIRES_EPISODE = [TipoCita.SEGUIMIENTO, TipoCita.INTERCONSULTA];
 
@@ -43,6 +45,8 @@ export class AppointmentsService {
     private readonly dataSource: DataSource,
     private readonly usersService: UsersService,
     private readonly sessionsService: SessionsService,
+    private readonly waitingListService: WaitingListService,
+    private readonly slotFinder: SlotFinderService,
     private readonly redis: RedisService,
   ) {}
 
@@ -71,26 +75,59 @@ export class AppointmentsService {
     }
 
     const durationMinutes = dto.durationMinutes ?? 60;
-    await this.assertNoConflict(dto.professionalId, scheduledAt, durationMinutes, null);
 
-    const appointment = this.repo.create({
-      patientId: dto.patientId,
-      professionalId: dto.professionalId,
-      scheduledAt,
-      durationMinutes,
-      tipoCita: dto.tipoCita,
-      estado: EstadoCita.CONFIRMADA,
-      motivo: dto.motivo ?? null,
-      notas: dto.notas ?? null,
-      motivoCancelacion: null,
-      episodeId: null,
-      sessionPaymentId: null,
-      reprogramadaDeId: null,
-      nuevaCitaId: null,
-      motivoReprogramacion: null,
+    // Capacity-aware con bloqueo pesimista
+    const saved = await this.dataSource.transaction(async (manager) => {
+      const fecha = toDateStr(scheduledAt);
+      const hora = toTimeStr(scheduledAt);
+
+      const cap = await this.slotFinder.validateSlotCapacity(
+        dto.professionalId,
+        fecha,
+        hora,
+        durationMinutes,
+        null,
+        manager,
+      );
+      if (!cap.disponible) {
+        const suggested = await this.slotFinder.findFreeSlots(
+          dto.professionalId,
+          fecha,
+          durationMinutes,
+        );
+        throw new ConflictException({
+          error: 'CONFLICT',
+          message: `Capacidad alcanzada (${cap.ocupados}/${cap.capacidad})`,
+          ocupados: cap.ocupados,
+          capacidad: cap.capacidad,
+          suggestedSlots: suggested,
+        });
+      }
+
+      const appointment = manager.create(Appointment, {
+        patientId: dto.patientId,
+        professionalId: dto.professionalId,
+        scheduledAt,
+        durationMinutes,
+        tipoCita: dto.tipoCita,
+        bookingType: dto.bookingType ?? AppointmentBookingType.PRE_BOOK,
+        estado: EstadoCita.CONFIRMADA,
+        motivo: dto.motivo ?? null,
+        notas: dto.notas ?? null,
+        motivoCancelacion: null,
+        episodeId: null,
+        sessionPaymentId: null,
+        sessionId: null,
+        treatmentPlanId: null,
+        reprogramadaDeId: null,
+        nuevaCitaId: null,
+        motivoReprogramacion: null,
+        intentosReagendamiento: 0,
+        esReprogNoShow: false,
+      });
+      return manager.save(Appointment, appointment);
     });
 
-    const saved = await this.repo.save(appointment);
     await this.redis.del(CK.APPT_PATIENT(dto.patientId));
     return saved;
   }
@@ -270,7 +307,26 @@ export class AppointmentsService {
       if (newDate <= new Date()) throw new BadRequestException('scheduledAt no puede ser en el pasado');
       const duration = dto.durationMinutes ?? appointment.durationMinutes;
       const profId = dto.professionalId ?? appointment.professionalId;
-      await this.assertNoConflict(profId, newDate, duration, id);
+
+      const cap = await this.slotFinder.validateSlotCapacity(
+        profId,
+        toDateStr(newDate),
+        toTimeStr(newDate),
+        duration,
+        id,
+      );
+      if (!cap.disponible) {
+        const suggested = await this.slotFinder.findFreeSlots(
+          profId,
+          toDateStr(newDate),
+          duration,
+        );
+        throw new ConflictException({
+          error: 'CONFLICT',
+          message: `Capacidad alcanzada (${cap.ocupados}/${cap.capacidad})`,
+          suggestedSlots: suggested,
+        });
+      }
       appointment.scheduledAt = newDate;
     }
 
@@ -280,6 +336,15 @@ export class AppointmentsService {
     if (dto.notas !== undefined) appointment.notas = dto.notas;
 
     const saved = await this.repo.save(appointment);
+
+    // Si está vinculada a sesión, sincronizar fechaSesion
+    if (saved.sessionId && dto.scheduledAt !== undefined) {
+      await this.dataSource.query(
+        `UPDATE sessions SET fecha_sesion = $1 WHERE id = $2`,
+        [toDateStr(saved.scheduledAt), saved.sessionId],
+      );
+    }
+
     await this.invalidateCache(saved);
     return saved;
   }
@@ -419,14 +484,33 @@ export class AppointmentsService {
 
       AppointmentStateFactory.get(original.estado).assertCanReschedule();
 
-      // Conflict check inside transaction
-      await this.assertNoConflict(
+      if (original.intentosReagendamiento >= 3) {
+        throw new UnprocessableEntityException(
+          'Límite de reagendamientos alcanzado (3). Contactar recepción para asistencia.',
+        );
+      }
+
+      // Capacity check bajo lock pesimista
+      const cap = await this.slotFinder.validateSlotCapacity(
         original.professionalId,
-        newDate,
+        toDateStr(newDate),
+        toTimeStr(newDate),
         original.durationMinutes,
         null,
         manager,
       );
+      if (!cap.disponible) {
+        const suggested = await this.slotFinder.findFreeSlots(
+          original.professionalId,
+          toDateStr(newDate),
+          original.durationMinutes,
+        );
+        throw new ConflictException({
+          error: 'CONFLICT',
+          message: `Capacidad alcanzada (${cap.ocupados}/${cap.capacidad})`,
+          suggestedSlots: suggested,
+        });
+      }
 
       // Create nueva cita (copies from original)
       const nueva = manager.create(Appointment, {
@@ -435,6 +519,7 @@ export class AppointmentsService {
         scheduledAt: newDate,
         durationMinutes: original.durationMinutes,
         tipoCita: original.tipoCita,
+        bookingType: original.bookingType,
         motivo: original.motivo,
         notas: original.notas,
         estado: EstadoCita.CONFIRMADA,
@@ -444,6 +529,8 @@ export class AppointmentsService {
         reprogramadaDeId: original.id,
         nuevaCitaId: null,
         motivoReprogramacion: null,
+        intentosReagendamiento: original.intentosReagendamiento + 1,
+        esReprogNoShow: false,
       });
       const savedNueva = await manager.save(Appointment, nueva);
 
@@ -473,44 +560,16 @@ export class AppointmentsService {
     appointment.estado = EstadoCita.NO_ASISTIO;
     const saved = await this.repo.save(appointment);
     await this.invalidateCache(saved);
+
+    // Fire-and-forget: auto-assign waiting list entry for the freed slot
+    this.waitingListService.autoAssignFromSlot(saved).catch(() => {
+      // Non-critical — slot auto-assignment is best-effort
+    });
+
     return saved;
   }
 
   // ─── Helpers ─────────────────────────────────────────────────────────────────
-
-  private async assertNoConflict(
-    professionalId: string,
-    scheduledAt: Date,
-    durationMinutes: number,
-    excludeId: string | null,
-    manager?: EntityManager,
-  ): Promise<void> {
-    const endAt = new Date(scheduledAt.getTime() + durationMinutes * 60_000);
-
-    const repo = manager ? manager.getRepository(Appointment) : this.repo;
-    const qb = repo
-      .createQueryBuilder('a')
-      .select('a.id', 'id')
-      .where('a.professional_id = :professionalId', { professionalId })
-      .andWhere('a.estado = :estado', { estado: EstadoCita.CONFIRMADA })
-      .andWhere('a.scheduled_at < :endAt', { endAt })
-      .andWhere(
-        `a.scheduled_at + (a.duration_minutes * interval '1 minute') > :scheduledAt`,
-        { scheduledAt },
-      )
-      .limit(1);
-
-    if (excludeId) qb.andWhere('a.id != :excludeId', { excludeId });
-
-    const conflict = await qb.getRawOne<{ id: string }>();
-    if (conflict) {
-      throw new ConflictException({
-        error: 'CONFLICT',
-        message: 'El profesional ya tiene una cita en ese horario',
-        overlapping: conflict.id,
-      });
-    }
-  }
 
   private async invalidateCache(appointment: Appointment): Promise<void> {
     await Promise.all([
@@ -518,4 +577,17 @@ export class AppointmentsService {
       this.redis.del(CK.APPT_PATIENT(appointment.patientId)),
     ]);
   }
+}
+
+function toDateStr(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function toTimeStr(date: Date): string {
+  const h = String(date.getHours()).padStart(2, '0');
+  const m = String(date.getMinutes()).padStart(2, '0');
+  return `${h}:${m}`;
 }

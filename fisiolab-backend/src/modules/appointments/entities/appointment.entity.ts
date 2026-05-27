@@ -12,8 +12,8 @@ import {
 import { Patient } from '../../patients/entities/patient.entity';
 
 export enum TipoCita {
-  PRIMERA_VEZ = 'PRIMERA_VEZ',
-  SEGUIMIENTO = 'SEGUIMIENTO',
+  PRIMERA_VEZ   = 'PRIMERA_VEZ',
+  SEGUIMIENTO   = 'SEGUIMIENTO',
   INTERCONSULTA = 'INTERCONSULTA',
 }
 
@@ -23,6 +23,12 @@ export enum EstadoCita {
   COMPLETADA   = 'COMPLETADA',
   REPROGRAMADA = 'REPROGRAMADA',
   NO_ASISTIO   = 'NO_ASISTIO',
+}
+
+export enum AppointmentBookingType {
+  SDA        = 'sda',
+  PRE_BOOK   = 'pre_book',
+  EMERGENCIA = 'emergencia',
 }
 
 @Entity('appointments')
@@ -83,6 +89,22 @@ export class Appointment {
   @Column({ name: 'session_payment_id', type: 'uuid', nullable: true })
   sessionPaymentId!: string | null;
 
+  @ApiPropertyOptional({
+    example: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee',
+    nullable: true,
+    description: 'Sesión vinculada (citas creadas desde un plan)',
+  })
+  @Column({ name: 'session_id', type: 'uuid', nullable: true })
+  sessionId!: string | null;
+
+  @ApiPropertyOptional({
+    example: 'ffffffff-1111-2222-3333-444444444444',
+    nullable: true,
+    description: 'Plan de tratamiento vinculado',
+  })
+  @Column({ name: 'treatment_plan_id', type: 'uuid', nullable: true })
+  treatmentPlanId!: string | null;
+
   @ApiPropertyOptional({ example: 'f1a2b3c4-d5e6-7890-abcd-ef1234567890', nullable: true })
   @Column({ name: 'reprogramada_de_id', type: 'uuid', nullable: true })
   reprogramadaDeId!: string | null;
@@ -94,6 +116,18 @@ export class Appointment {
   @ApiPropertyOptional({ example: 'Paciente solicita cambio de horario', nullable: true })
   @Column({ name: 'motivo_reprogramacion', type: 'varchar', length: 500, nullable: true })
   motivoReprogramacion!: string | null;
+
+  @ApiProperty({ enum: AppointmentBookingType, example: AppointmentBookingType.PRE_BOOK })
+  @Column({ name: 'booking_type', type: 'enum', enum: AppointmentBookingType, default: AppointmentBookingType.PRE_BOOK })
+  bookingType!: AppointmentBookingType;
+
+  @ApiProperty({ example: 0, description: 'Veces que ha sido reagendada. Límite: 3.' })
+  @Column({ name: 'intentos_reagendamiento', type: 'int', default: 0 })
+  intentosReagendamiento!: number;
+
+  @ApiProperty({ example: false })
+  @Column({ name: 'es_reprog_no_show', type: 'boolean', default: false })
+  esReprogNoShow!: boolean;
 
   @ApiProperty({ example: '2024-03-20T10:30:00Z' })
   @CreateDateColumn({ name: 'created_at' })

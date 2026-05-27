@@ -1,13 +1,16 @@
 import './assets/css/App.css';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth, useUser } from '@clerk/clerk-react';
-import AuthLayout from './layouts/auth';
-import AdminLayout from './layouts/admin';
-import RTLLayout from './layouts/rtl';
+import AuthLayout from './components/layouts/auth';
+import AdminLayout from './components/layouts/admin';
+import RTLLayout from './components/layouts/rtl';
+import OnboardingWizard from './pages/onboarding/OnboardingWizard';
+import { CalendarPreview } from './pages/preview/CalendarPreview';
 import { ChakraProvider, Flex, Spinner } from '@chakra-ui/react';
 import initialTheme from './theme/theme';
 import { useState, useEffect } from 'react';
 import { getUserRole, getRoleRedirect } from './utils/auth';
+import { useCurrentDbUser } from './hooks/useCurrentUser';
 
 function DevTokenLogger(): null {
   const { isSignedIn, getToken } = useAuth();
@@ -50,6 +53,26 @@ function ProtectedRoute({ children }: { children: JSX.Element }) {
   return children;
 }
 
+const CLINICAL_ROLES = ['medico', 'fisioterapeuta', 'pasante'];
+
+function AdminGuardedLayout(props: { theme: any; setTheme: any }) {
+  const { data: user, isLoading } = useCurrentDbUser();
+
+  if (isLoading) {
+    return (
+      <Flex h='100vh' align='center' justify='center'>
+        <Spinner size='xl' color='brand.500' />
+      </Flex>
+    );
+  }
+
+  if (user && CLINICAL_ROLES.includes(user.role) && !user.hasAvailability) {
+    return <Navigate to='/onboarding/disponibilidad' replace />;
+  }
+
+  return <AdminLayout theme={props.theme} setTheme={props.setTheme} />;
+}
+
 function GuestRoute({ children }: { children: JSX.Element }) {
   const { isSignedIn, isLoaded } = useAuth();
   const { user } = useUser();
@@ -79,11 +102,20 @@ export default function Main() {
             </GuestRoute>
           }
         />
+        {/* Onboarding — accessible to all authenticated users, no sidebar */}
+        <Route
+          path='onboarding/disponibilidad'
+          element={
+            <ProtectedRoute>
+              <OnboardingWizard />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path='admin/*'
           element={
             <ProtectedRoute>
-              <AdminLayout theme={currentTheme} setTheme={setCurrentTheme} />
+              <AdminGuardedLayout theme={currentTheme} setTheme={setCurrentTheme} />
             </ProtectedRoute>
           }
         />
@@ -95,6 +127,7 @@ export default function Main() {
             </ProtectedRoute>
           }
         />
+        <Route path='preview/calendar' element={<CalendarPreview />} />
         <Route path='/' element={<RootRedirect />} />
       </Routes>
     </ChakraProvider>

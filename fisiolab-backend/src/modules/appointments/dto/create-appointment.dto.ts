@@ -10,7 +10,7 @@ import {
   MaxLength,
   Min,
 } from 'class-validator';
-import { TipoCita } from '../entities/appointment.entity';
+import { AppointmentBookingType, TipoCita } from '../entities/appointment.entity';
 
 export class CreateAppointmentDto {
   @ApiProperty({ example: 'b2c3d4e5-f6a7-8901-bcde-f01234567890' })
@@ -40,4 +40,8 @@ export class CreateAppointmentDto {
   @ApiPropertyOptional({ example: 'Traer estudios previos de columna.' })
   @IsOptional() @IsString() @MaxLength(1000)
   notas?: string;
+
+  @ApiPropertyOptional({ enum: AppointmentBookingType, default: AppointmentBookingType.PRE_BOOK, description: 'SDA = mismo día | PRE_BOOK = anticipado | EMERGENCIA = urgente' })
+  @IsOptional() @IsEnum(AppointmentBookingType)
+  bookingType?: AppointmentBookingType;
 }

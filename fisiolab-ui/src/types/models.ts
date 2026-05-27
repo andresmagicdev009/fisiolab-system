@@ -243,6 +243,8 @@ export interface CurrentDbUser {
   nombres: string | null;
   apellidos: string | null;
   externalAuthId: string | null;
+  hasAvailability: boolean;
+  capacidadAtencionParalela: number;
   createdAt: string;
   updatedAt: string;
 }

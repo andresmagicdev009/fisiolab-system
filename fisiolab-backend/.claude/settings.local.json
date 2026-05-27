@@ -2,7 +2,10 @@
   "permissions": {
     "allow": [
       "Bash(npx skills *)",
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "PowerShell(git *)",
+      "PowerShell(Get-ChildItem \"D:\\\\Proyectos\\\\Web\\\\fisiolab-system\\\\fisiolab-backend\\\\src\" -Recurse -Name -Depth 2 | Where-Object { $_ -notmatch \"node_modules\" })",
+      "Bash(findstr -i \"availability\\\\|slot\\\\|waiting\")"
     ]
   }
 }

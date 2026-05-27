@@ -1,5 +1,6 @@
 import { extendTheme, HTMLChakraProps, ThemingProps } from '@chakra-ui/react';
 import { CardComponent } from './additions/card/card';
+import { CalendarComponent } from './additions/calendar/calendar';
 import { buttonStyles } from './components/button';
 import { badgeStyles } from './components/badge';
 import { inputStyles } from './components/input';
@@ -22,7 +23,8 @@ export default extendTheme(
 	inputStyles, // input styles
 	textareaStyles, // textarea styles
 	switchStyles, // switch styles
-	CardComponent // card component
+	CardComponent, // card component
+	CalendarComponent // calendar component
 );
 
 export interface CustomCardProps extends HTMLChakraProps<'div'>, ThemingProps {}

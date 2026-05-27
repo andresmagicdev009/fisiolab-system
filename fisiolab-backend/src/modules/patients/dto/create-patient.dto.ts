@@ -6,6 +6,7 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  IsUUID,
   Length,
   Matches,
   Validate,
@@ -91,4 +92,12 @@ export class CreatePatientDto {
   @IsOptional()
   @IsEnum(EstadoCivil, { message: 'Estado civil inválido' })
   estadoCivil?: EstadoCivil;
+
+  @ApiPropertyOptional({
+    example: 'b2c3d4e5-f6a7-8901-bcde-f01234567890',
+    description: 'Médico de cabecera (User id)',
+  })
+  @IsOptional()
+  @IsUUID('4', { message: 'primaryPhysicianId debe ser UUID v4' })
+  primaryPhysicianId?: string;
 }

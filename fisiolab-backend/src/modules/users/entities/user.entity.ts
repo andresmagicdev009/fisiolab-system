@@ -30,6 +30,9 @@ export class User {
   @Column({ nullable: true, type: 'varchar', length: 100 })
   apellidos!: string | null;
 
+  @Column({ name: 'capacidad_atencion_paralela', type: 'int', default: 1 })
+  capacidadAtencionParalela!: number;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 

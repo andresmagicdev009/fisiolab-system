@@ -93,6 +93,14 @@ export class Patient {
   @Column({ name: 'estado_civil', type: 'enum', enum: EstadoCivil, nullable: true })
   estadoCivil!: EstadoCivil | null;
 
+  @ApiPropertyOptional({
+    example: 'b2c3d4e5-f6a7-8901-bcde-f01234567890',
+    nullable: true,
+    description: 'Médico de cabecera (pre-selección al agendar)',
+  })
+  @Column({ name: 'primary_physician_id', type: 'uuid', nullable: true })
+  primaryPhysicianId!: string | null;
+
   @ApiProperty({ example: '2024-01-15T10:30:00Z' })
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;

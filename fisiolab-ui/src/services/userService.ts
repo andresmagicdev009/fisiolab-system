@@ -11,4 +11,9 @@ export const userService = {
     const { data } = await apiClient.get<CurrentDbUser[]>('/users');
     return data;
   },
+
+  updateCapacidad: async (id: string, capacidadAtencionParalela: number): Promise<CurrentDbUser> => {
+    const { data } = await apiClient.patch<CurrentDbUser>(`/users/${id}`, { capacidadAtencionParalela });
+    return data;
+  },
 };

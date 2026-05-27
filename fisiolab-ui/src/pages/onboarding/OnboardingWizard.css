@@ -1,0 +1,651 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+/* ─── Variables — sistema FisioLab ──────────────────────────────── */
+.ob-page {
+  /* Brand (brand.*) */
+  --primary: #422AFB;
+  /* brand.500  */
+  --primary-hover: #3311DB;
+  /* brand.600  */
+  --primary-deep: #02044A;
+  /* brand.700  */
+  --primary-navy: #111c44;
+  /* navy.800   */
+  --primary-dim: #E9E3FF;
+  /* brand.100  */
+
+  /* Grays (secondaryGray.*) */
+  --text-dark: #1B2559;
+  /* secondaryGray.900 */
+  --text-mid: #707EAE;
+  /* secondaryGray.700 */
+  --text-soft: #A3AED0;
+  /* secondaryGray.600 */
+  --text-muted: #8F9BBA;
+  /* secondaryGray.500 */
+  --border: #E0E5F2;
+  /* secondaryGray.100 */
+  --surface: #F4F7FE;
+  /* secondaryGray.300 */
+  --surface-alt: #E9EDF7;
+  /* secondaryGray.400 */
+
+  /* Feedback */
+  --error-bg: #FEEFEE;
+  /* red.100   */
+  --error-border: #EE5D50;
+  /* red.500   */
+  --error-text: #E31A1A;
+  /* red.600   */
+
+  --shadow-card: 0 8px 48px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-pill: 0 4px 16px rgba(66, 42, 251, 0.28);
+  --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --radius-card: 26px;
+  --radius-btn: 14px;
+
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--surface);
+  min-height: 100vh;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* ─── Background orbs ────────────────────────────────────────────── */
+.ob-bg-orb {
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.ob-bg-orb-1 {
+  width: 680px;
+  height: 680px;
+  background: radial-gradient(circle, rgba(66, 42, 251, 0.07) 0%, transparent 68%);
+  top: -260px;
+  right: -160px;
+}
+
+.ob-bg-orb-2 {
+  width: 480px;
+  height: 480px;
+  background: radial-gradient(circle, rgba(17, 28, 68, 0.05) 0%, transparent 68%);
+  bottom: -120px;
+  left: -120px;
+}
+
+.ob-bg-orb-3 {
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(117, 81, 255, 0.05) 0%, transparent 70%);
+  top: 40%;
+  left: 8%;
+}
+
+/* ─── Two-column layout ──────────────────────────────────────────── */
+.ob-layout {
+  display: flex;
+  width: 100%;
+  position: relative;
+  z-index: 1;
+  flex: 1;
+}
+
+.ob-calendar-panel {
+  flex: 1;
+  overflow: hidden;
+  min-width: 0;
+  padding: 20px 24px 24px;
+}
+
+.ob-config-panel {
+  width: 30%;
+  flex-shrink: 0;
+  padding: 40px 24px 40px;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.ob-config-inner {
+  width: 100%;
+  max-width: 380px;
+}
+
+/* ─── Container ──────────────────────────────────────────────────── */
+.ob-container {
+  width: 100%;
+  position: relative;
+}
+
+/* ─── Brand ──────────────────────────────────────────────────────── */
+.ob-brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-bottom: 28px;
+  color: var(--primary-navy);
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: -0.02em;
+}
+
+.ob-brand-logo {
+  width: 38px;
+  height: 38px;
+  background: var(--primary-navy);
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(17, 28, 68, 0.3);
+}
+
+.ob-brand-logo svg {
+  width: 20px;
+  height: 20px;
+  color: white;
+}
+
+/* ─── Card ───────────────────────────────────────────────────────── */
+.ob-card {
+  background: #FFFFFF;
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  padding: 36px 40px;
+  border: 1px solid var(--border);
+}
+
+/* ─── Header ─────────────────────────────────────────────────────── */
+.ob-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 100px;
+  margin-bottom: 28px;
+}
+
+.ob-title {
+  font-family: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1.05;
+  color: var(--primary-navy);
+  margin: 0 0 10px;
+  letter-spacing: -0.025em;
+}
+
+.ob-subtitle {
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--text-muted);
+  margin: 0;
+  max-width: 320px;
+}
+
+.ob-step-chip {
+  flex-shrink: 0;
+  background: var(--primary-dim);
+  color: var(--primary);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  padding: 6px 13px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(66, 42, 251, 0.2);
+  white-space: nowrap;
+  margin-top: 4px;
+}
+
+/* ─── Divider ────────────────────────────────────────────────────── */
+.ob-divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--border), transparent);
+  margin: 24px 0;
+}
+
+/* ─── Section ────────────────────────────────────────────────────── */
+.ob-section {
+  margin-bottom: 8px;
+}
+
+.ob-section-label {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+/* ─── Day Pills ──────────────────────────────────────────────────── */
+.ob-day-pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.ob-day-pill {
+  width: 50px;
+  height: 50px;
+  border-radius: 13px;
+  border: none;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: var(--transition);
+  background: var(--surface-alt);
+  color: var(--text-mid);
+  outline: none;
+  user-select: none;
+}
+
+.ob-day-pill:hover:not(.ob-day-pill--active) {
+  background: var(--border);
+  color: var(--text-dark);
+  transform: translateY(-1px);
+}
+
+.ob-day-pill--active {
+  background: var(--primary-navy);
+  color: #FFFFFF;
+  box-shadow: var(--shadow-pill);
+  transform: translateY(-1px);
+}
+
+/* ─── Day Config Rows ────────────────────────────────────────────── */
+.ob-day-configs {
+  min-height: 4px;
+}
+
+.ob-day-row {
+  background: var(--surface);
+  border-radius: 14px;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.ob-day-row-inner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ob-day-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-dark);
+  min-width: 90px;
+  flex-shrink: 0;
+}
+
+.ob-day-indicator {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--primary);
+  flex-shrink: 0;
+}
+
+/* ─── Time Controls ──────────────────────────────────────────────── */
+.ob-time-controls {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  flex: 1;
+}
+
+.ob-time-field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.ob-time-field-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.ob-time-separator {
+  font-size: 13px;
+  color: var(--text-soft);
+  padding-bottom: 6px;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.ob-no-days-msg {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 14px;
+  padding: 24px 0 16px;
+  font-style: italic;
+}
+
+/* ─── Action Buttons ─────────────────────────────────────────────── */
+.ob-day-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.ob-action-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-soft);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  outline: none;
+  padding: 0;
+}
+
+.ob-action-btn:hover {
+  background: var(--border);
+  color: var(--text-dark);
+}
+
+.ob-action-btn--danger:hover {
+  background: var(--error-bg);
+  color: var(--error-text);
+}
+
+/* ─── Duration Pills ─────────────────────────────────────────────── */
+.ob-duration-pills {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ob-duration-pill {
+  padding: 9px 20px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background: transparent;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-mid);
+  cursor: pointer;
+  transition: var(--transition);
+  outline: none;
+  user-select: none;
+}
+
+.ob-duration-pill:hover:not(.ob-duration-pill--active) {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--primary-dim);
+}
+
+.ob-duration-pill--active {
+  background: var(--primary-dim);
+  border-color: var(--primary);
+  color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(66, 42, 251, 0.12);
+}
+
+/* ─── Error Banner ───────────────────────────────────────────────── */
+.ob-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: var(--error-bg);
+  border: 1px solid var(--error-border);
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 13px;
+  color: var(--error-text);
+  margin-bottom: 18px;
+  line-height: 1.5;
+}
+
+.ob-error-icon {
+  font-size: 15px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ─── Success State ──────────────────────────────────────────────── */
+.ob-success-overlay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 0 32px;
+  text-align: center;
+}
+
+.ob-success-ring {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--primary-dim);
+  border: 2px solid rgba(66, 42, 251, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 22px;
+}
+
+.ob-success-check {
+  font-size: 30px;
+  line-height: 1;
+}
+
+.ob-success-title {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--primary-navy);
+  margin: 0 0 8px;
+}
+
+.ob-success-sub {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.ob-success-dots {
+  display: flex;
+  gap: 6px;
+  margin-top: 28px;
+}
+
+.ob-success-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--primary);
+  animation: ob-bounce 1.2s infinite ease-in-out;
+}
+
+.ob-success-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.ob-success-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes ob-bounce {
+
+  0%,
+  80%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.5;
+  }
+
+  40% {
+    transform: translateY(-8px);
+    opacity: 1;
+  }
+}
+
+/* ─── Submit Button ──────────────────────────────────────────────── */
+.ob-submit-btn {
+  width: 100%;
+  height: 52px;
+  background: var(--primary);
+  color: #FFFFFF;
+  border: none;
+  border-radius: var(--radius-btn);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  outline: none;
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+  margin-bottom: 18px;
+  position: relative;
+  overflow: hidden;
+  letter-spacing: -0.01em;
+}
+
+.ob-submit-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.ob-submit-btn:hover:not(:disabled) {
+  background: var(--primary-hover);
+  box-shadow: 0 6px 20px rgba(66, 42, 251, 0.35);
+}
+
+.ob-submit-btn:active:not(:disabled) {
+  transform: scale(0.99);
+}
+
+.ob-submit-btn:disabled {
+  opacity: 0.75;
+  cursor: not-allowed;
+}
+
+.ob-submit-arrow {
+  font-size: 17px;
+  display: inline-block;
+  transition: transform 0.2s;
+}
+
+.ob-submit-btn:hover:not(:disabled) .ob-submit-arrow {
+  transform: translateX(5px);
+}
+
+.ob-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2.5px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #FFFFFF;
+  border-radius: 50%;
+  animation: ob-spin 0.65s linear infinite;
+}
+
+@keyframes ob-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ─── Footer Note ────────────────────────────────────────────────── */
+.ob-footer-note {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ─── Responsive ─────────────────────────────────────────────────── */
+@media (max-width: 1100px) {
+  .ob-calendar-panel {
+    flex: 1;
+    overflow: hidden;
+    min-width: 0;
+  }
+
+  .ob-config-panel {
+    width: 100%;
+    padding: 40px 24px 80px;
+  }
+
+  .ob-container {
+    max-width: 580px;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .ob-config-panel {
+    padding: 32px 16px 80px;
+  }
+
+  .ob-card {
+    padding: 28px 22px;
+  }
+
+  .ob-title {
+    font-size: 28px;
+  }
+
+  .ob-header {
+    flex-direction: column-reverse;
+    gap: 10px;
+  }
+
+  .ob-step-chip {
+    align-self: flex-start;
+  }
+
+  .ob-day-row-inner {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .ob-day-name {
+    min-width: unset;
+    flex: 1;
+  }
+
+  .ob-day-pill {
+    width: 44px;
+    height: 44px;
+    font-size: 9px;
+  }
+}
