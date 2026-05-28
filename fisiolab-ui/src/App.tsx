@@ -11,6 +11,7 @@ import initialTheme from './theme/theme';
 import { useState, useEffect } from 'react';
 import { getUserRole, getRoleRedirect } from './utils/auth';
 import { useCurrentDbUser } from './hooks/useCurrentUser';
+import { VerificationCodeInputPreview } from 'pages/preview/VerificationCodeInputPreview';
 
 function DevTokenLogger(): null {
   const { isSignedIn, getToken } = useAuth();
@@ -111,6 +112,9 @@ export default function Main() {
             </ProtectedRoute>
           }
         />
+
+        <Route path='preview/verification-code' element={<VerificationCodeInputPreview />} />
+
         <Route
           path='admin/*'
           element={

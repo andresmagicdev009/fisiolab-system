@@ -23,7 +23,9 @@ import PatientDetail from 'pages/professional/patients/PatientDetail';
 // Auth views
 import SignInCentered from 'pages/auth/signIn';
 import AuthCallback from 'pages/auth/callback';
+import ForgotPassword from 'pages/auth/forgotPassword';
 import { CalendarPreview } from 'pages/preview/CalendarPreview';
+import { VerificationCodeInputPreview } from 'pages/preview/VerificationCodeInputPreview';
 
 const routes: RoutesType[] = [
   // ── Admin ────────────────────────────────────────────────
@@ -56,7 +58,7 @@ const routes: RoutesType[] = [
     roles: ['medico'],
   },
 
-  
+
 
   // ── Pacientes ────────────────────────────────────────────
   {
@@ -110,12 +112,26 @@ const routes: RoutesType[] = [
     component: <AuthCallback />,
   },
   {
+    name: 'Forgot Password',
+    layout: '/auth',
+    path: '/forgot-password',
+    icon: <Icon as={MdLock} width='20px' height='20px' color='inherit' />,
+    component: <ForgotPassword />,
+  },
+  {
     name: 'Calendar Preview Test',
     layout: "/preview",
     path: "/preview/calendar",
     icon: <Icon as={MdCalendarMonth} width='20px' height='20px' color='inherit' />,
     component: <CalendarPreview />,
-  }
+  },
+  {
+    name: 'Verification Code Preview',
+    layout: '/preview',
+    path: '/preview/verification-code',
+    icon: '',
+    component: <VerificationCodeInputPreview />,
+  },
 ];
 
 export default routes;
