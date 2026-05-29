@@ -12,6 +12,8 @@ import { useState, useEffect } from 'react';
 import { getUserRole, getRoleRedirect } from './utils/auth';
 import { useCurrentDbUser } from './hooks/useCurrentUser';
 import { VerificationCodeInputPreview } from 'pages/preview/VerificationCodeInputPreview';
+import StepsPreview from 'pages/preview/StepsPreview';
+import ModalEpisodioPreview from 'pages/preview/ModalEpisodioPreview';
 
 function DevTokenLogger(): null {
   const { isSignedIn, getToken } = useAuth();
@@ -132,6 +134,8 @@ export default function Main() {
           }
         />
         <Route path='preview/calendar' element={<CalendarPreview />} />
+        <Route path='preview/steps' element={<StepsPreview />} />
+        <Route path='preview/modal-episodio' element={<ModalEpisodioPreview />} />
         <Route path='/' element={<RootRedirect />} />
       </Routes>
     </ChakraProvider>

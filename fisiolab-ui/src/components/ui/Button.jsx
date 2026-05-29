@@ -25,7 +25,7 @@ export default function Button({
       form={form}
       fontWeight='700'
       fontSize='sm'
-      borderRadius='16px'
+      borderRadius='7px'
       h='44px'
       px='24px'
       size={size}

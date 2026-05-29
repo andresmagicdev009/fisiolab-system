@@ -30,7 +30,7 @@ EP1 (ciclo vida) ──┼──► EP3 (objetivos) ──► EP4 (alta estructu
 - [ ] **T-EP1-F01** Nuevo componente `EpisodeReopenModal.tsx`
   - TextArea `motivoReapertura` (min 20, max 500)
   - Confirmación explícita antes de submit
-  - Disponible solo si `rol === ADMIN || MEDICO` + `episode.estado === 'cerrado'`
+  - Disponible solo si `rol === ADMIN || MEDICO || FISIOTERAPEUTA` + `episode.estado === 'cerrado'`
 - [ ] **T-EP1-F02** Hook `useReopenEpisode` en `useEpisodes.ts`
 - [ ] **T-EP1-F03** `episodeService.ts` — agregar `reopenEpisode(patientId, episodeId, body)`
 - [ ] **T-EP1-F04** Botón "Reabrir episodio" en `EpisodeActiveCard` menu de acciones (visible solo si cerrado + rol)

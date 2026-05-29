@@ -7,10 +7,10 @@ import {
   ModalBody,
   ModalFooter,
   ModalCloseButton,
-  Button,
   Box,
+  Flex,
 } from '@chakra-ui/react';
-
+import Button from 'components/ui/Button';
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -27,6 +27,7 @@ interface ModalProps {
   secondaryBtnDisabled?: boolean;
   hideFooter?: boolean;
   closeOnOverlayClick?: boolean;
+  headerExtra?: React.ReactNode;
 }
 
 export default function CustomModal({
@@ -45,6 +46,7 @@ export default function CustomModal({
   secondaryBtnDisabled = false,
   hideFooter = false,
   closeOnOverlayClick = true,
+  headerExtra,
 }: ModalProps) {
   return (
     <Modal
@@ -57,15 +59,19 @@ export default function CustomModal({
     >
       <ModalOverlay backdropFilter="blur(4px)" />
       <ModalContent>
-        {title && (
+        {(title || headerExtra) && (
           <ModalHeader
             fontSize="lg"
             fontWeight="700"
             color="navy.800"
             borderBottom="1px solid"
             borderColor="secondaryGray.100"
+            pr="48px"
           >
-            {title}
+            <Flex align="center" justify="space-between" gap="16px">
+              {title && <Box flexShrink={0}>{title}</Box>}
+              {headerExtra && <Box flex="1">{headerExtra}</Box>}
+            </Flex>
           </ModalHeader>
         )}
         <ModalCloseButton />
