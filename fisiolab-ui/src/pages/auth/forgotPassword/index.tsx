@@ -4,7 +4,6 @@ import { useSignIn, useUser } from '@clerk/clerk-react';
 import {
   Box,
   Button,
-  Fade,
   Flex,
   FormControl,
   FormLabel,
@@ -25,6 +24,7 @@ import illustration from 'assets/img/auth/auth.jpg';
 import { MdOutlineRemoveRedEye } from 'react-icons/md';
 import { RiEyeCloseLine } from 'react-icons/ri';
 import VerificationCodeInput from 'components/fields/VerificationCodeInput';
+import Timer from 'components/fields/Timer';
 import { getRoleRedirect, getUserRole } from 'utils/auth';
 
 type Step = 'request' | 'verify' | 'reset';
@@ -45,6 +45,7 @@ function ForgotPassword() {
   const [error, setError] = useState('');
   const [codeError, setCodeError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [codeExpired, setCodeExpired] = useState(false);
 
   const { signIn, isLoaded, setActive } = useSignIn();
   const { user } = useUser();
@@ -60,6 +61,7 @@ function ForgotPassword() {
         strategy: 'reset_password_email_code',
         identifier: email,
       });
+      setCodeExpired(false);
       setStep('verify');
     } catch (err: any) {
       const msg = err?.errors?.[0]?.longMessage ?? err?.errors?.[0]?.message ?? 'Error al enviar el código';
@@ -78,6 +80,8 @@ function ForgotPassword() {
         strategy: 'reset_password_email_code',
         identifier: email,
       });
+      setCodeExpired(false);
+      setCode('');
     } catch (err: any) {
       const msg = err?.errors?.[0]?.longMessage ?? err?.errors?.[0]?.message ?? 'Error al reenviar el código';
       setError(msg);
@@ -143,27 +147,18 @@ function ForgotPassword() {
         mt={{ base: '40px', md: '14vh' }}
         flexDirection='column'>
 
-        <Fade in={step === 'request'} unmountOnExit>
+        {step !== 'verify' && (
           <Box me='auto' mb='30px'>
             <Heading color={textColor} fontSize='36px' mb='10px'>
-              Recuperar contraseña
+              {step === 'request' && 'Recuperar contraseña'}
+              {step === 'reset' && 'Nueva contraseña'}
             </Heading>
             <Text color={textColorSecondary} fontWeight='400' fontSize='md'>
-              Ingresa tu correo y te enviaremos un código de verificación.
+              {step === 'request' && 'Ingresa tu correo y te enviaremos un código de verificación.'}
+              {step === 'reset' && 'Ingresa tu nueva contraseña para continuar.'}
             </Text>
           </Box>
-        </Fade>
-
-        <Fade in={step === 'reset'} unmountOnExit>
-          <Box me='auto' mb='30px'>
-            <Heading color={textColor} fontSize='36px' mb='10px'>
-              Nueva contraseña
-            </Heading>
-            <Text color={textColorSecondary} fontWeight='400' fontSize='md'>
-              Ingresa tu nueva contraseña para continuar.
-            </Text>
-          </Box>
-        </Fade>
+        )}
 
         <Flex
           direction='column'
@@ -180,7 +175,7 @@ function ForgotPassword() {
           )}
 
           {/* Step 1 — Email */}
-          <Fade in={step === 'request'} unmountOnExit>
+          {step === 'request' && (
             <form onSubmit={handleRequestCode}>
               <FormControl>
                 <FormLabel display='flex' ms='4px' fontSize='sm' fontWeight='500' color={textColor} mb='8px'>
@@ -221,7 +216,7 @@ function ForgotPassword() {
                 </NavLink>
               </FormControl>
             </form>
-          </Fade>
+          )}
 
           {/* Step 2 — Verificar código */}
           {step === 'verify' && (
@@ -243,35 +238,40 @@ function ForgotPassword() {
                   onChange={setCode}
                   label=''
                   helperText=''
-                  error={codeError}
+                  error={codeExpired ? 'El código ha expirado. Reenvía uno nuevo.' : codeError}
+                  isDisabled={codeExpired}
                 />
-                <HStack spacing='4px' justify='center' w='100%'>
-                  <Text fontSize='sm' color={textColorSecondary}>
-                    ¿No recibiste el código?
-                  </Text>
+
+                <HStack justify='space-between' w='100%'>
+                  {!codeExpired ? (
+                    <Timer seconds={120} onExpire={() => setCodeExpired(true)} />
+                  ) : (
+                    <Text fontSize='sm' color='red.500' fontWeight='500'>
+                      Código expirado
+                    </Text>
+                  )}
                   <Text
                     fontSize='sm'
                     color='brand.500'
                     fontWeight='600'
                     _hover={{ cursor: 'pointer', textDecoration: 'underline' }}
                     onClick={handleResendCode}>
-                    Click para reenviar
+                    Reenviar código
                   </Text>
                 </HStack>
-                <HStack spacing='12px' justify='center' w='100%'>
-                  <Button
-                    w='100%'
-                    variant='brand'
-                    fontSize='sm'
-                    fontWeight='500'
-                    h='50px'
-                    borderRadius='7px'
-                    boxShadow='sm'
-                    onClick={handleVerifyCode}
-                    isDisabled={code.length !== 6}>
-                    Verificar
-                  </Button>
-                </HStack>
+
+                <Button
+                  w='100%'
+                  variant='brand'
+                  fontSize='sm'
+                  fontWeight='500'
+                  h='50px'
+                  borderRadius='7px'
+                  boxShadow='sm'
+                  onClick={handleVerifyCode}
+                  isDisabled={code.length !== 6 || codeExpired}>
+                  Verificar
+                </Button>
               </VStack>
             </Box>
           )}

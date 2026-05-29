@@ -14,6 +14,7 @@ import {
     AlertIcon,
 } from '@chakra-ui/react';
 import VerificationCodeInput from 'components/fields/VerificationCodeInput';
+import Timer from 'components/fields/Timer';
 
 export const VerificationCodeInputPreview: React.FC = () => {
     const [code, setCode] = useState('');
@@ -40,6 +41,11 @@ export const VerificationCodeInputPreview: React.FC = () => {
         setSubmitted(false);
     };
 
+    const handleTimerExpire = () => {
+        setError('El código ha expirado. Solicita uno nuevo.');
+        setCode('');
+    };
+
     return (
         <Container maxW='container.lg' py='40px'>
             <VStack spacing='40px' align='stretch'>
@@ -49,17 +55,13 @@ export const VerificationCodeInputPreview: React.FC = () => {
                         Verificación de Código
                     </Heading>
                     <Text color='gray.500' fontSize='md'>
-                        Preview del componente VerificationCodeInput
+                        Preview del componente VerificationCodeInput + Timer
                     </Text>
                 </Box>
 
                 <Divider />
 
                 {/* Estado 1: Normal */}
-
-
-
-
                 <Box bg={bgColor} p='32px' borderRadius='7px' boxShadow='sm' maxW='500px' mx='auto'>
                     <VStack spacing='24px' align='stretch'>
                         <VerificationCodeInput
@@ -69,6 +71,16 @@ export const VerificationCodeInputPreview: React.FC = () => {
                             helperText='Se ha enviado un código de 6 dígitos a tu correo electrónico'
                             error={error}
                         />
+                        
+                        {/* Timer */}
+                        <Flex justify='center' w='100%'>
+                            <Timer 
+                                seconds={300} 
+                                onExpire={handleTimerExpire}
+                                showLabel={true}
+                            />
+                        </Flex>
+
                         <HStack spacing='4px' justify='center' w='100%'>
                             <Text fontSize='sm' >
                                 No has recibido el código?
@@ -91,11 +103,8 @@ export const VerificationCodeInputPreview: React.FC = () => {
                                 Verificar
                             </Button>
                         </HStack>
-
                     </VStack>
                 </Box>
-
-
 
                 {/* Estado 2: Con Error */}
                 <Box bg={bgColor} p='32px' borderRadius='12px' boxShadow='sm'>
@@ -109,6 +118,9 @@ export const VerificationCodeInputPreview: React.FC = () => {
                         error='El código que ingresaste es incorrecto. Intenta de nuevo.'
                         helperText='Se ha enviado un código de 6 dígitos a tu correo electrónico'
                     />
+                    <Flex justify='center' w='100%' mt='16px'>
+                        <Timer seconds={120} showLabel={true} />
+                    </Flex>
                 </Box>
 
                 {/* Estado 3: Deshabilitado */}
@@ -187,6 +199,12 @@ export const VerificationCodeInputPreview: React.FC = () => {
                                 ✓
                             </Box>
                             Validación visual de errores
+                        </Flex>
+                        <Flex align='center'>
+                            <Box as='span' me='8px' color='green.500' fontWeight='bold'>
+                                ✓
+                            </Box>
+                            Timer con cuenta regresiva (cambia a rojo cuando falta menos de 10 segundos)
                         </Flex>
                     </VStack>
                 </Box>

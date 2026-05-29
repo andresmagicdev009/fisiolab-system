@@ -33,8 +33,10 @@ import { ClinicalEpisodesService } from './clinical-episodes.service';
 import { CreateEpisodeDto } from './dto/create-episode.dto';
 import { UpdateEpisodeDto } from './dto/update-episode.dto';
 import { CloseEpisodeDto } from './dto/close-episode.dto';
+import { ReopenEpisodeDto } from './dto/reopen-episode.dto';
 import { EpisodeQueryDto } from './dto/episode-query.dto';
 import { ClinicalEpisode } from './entities/clinical-episode.entity';
+
 
 const READERS = [UserRole.ADMIN, UserRole.MEDICO, UserRole.FISIOTERAPEUTA, UserRole.PASANTE];
 const WRITERS = [UserRole.ADMIN, UserRole.MEDICO, UserRole.FISIOTERAPEUTA];
@@ -44,7 +46,7 @@ const WRITERS = [UserRole.ADMIN, UserRole.MEDICO, UserRole.FISIOTERAPEUTA];
 @Controller('patients/:patientId/episodes')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class EpisodePatientController {
-  constructor(private readonly service: ClinicalEpisodesService) {}
+  constructor(private readonly service: ClinicalEpisodesService) { }
 
   @Post()
   @Roles(...WRITERS)
@@ -126,5 +128,23 @@ export class EpisodePatientController {
     @Body() dto: CloseEpisodeDto,
   ): Promise<ClinicalEpisode> {
     return this.service.close(patientId, episodeId, dto);
+  }
+
+  @Post(':episodeId/reopen')
+  @Roles(UserRole.ADMIN, UserRole.MEDICO, UserRole.FISIOTERAPEUTA)
+  @HttpCode(HttpStatus.OK)
+  @Auditable('REOPEN_EPISODE')
+  @ApiOperation({ summary: 'Reabrir episodio clínico cerrado' })
+  @ApiParam({ name: 'patientId', description: 'UUID del paciente' })
+  @ApiParam({ name: 'episodeId', description: 'UUID del episodio' })
+  @ApiOkResponse({ description: 'Episodio reabierto', type: ClinicalEpisode })
+  @ApiNotFoundResponse({ description: 'Paciente o episodio no encontrado' })
+  @ApiResponse({ status: 422, description: 'Episodio no está cerrado' })
+  reopen(
+    @Param('patientId', ParseUUIDPipe) patientId: string,
+    @Param('episodeId', ParseUUIDPipe) episodeId: string,
+    @Body() dto: ReopenEpisodeDto,
+  ): Promise<ClinicalEpisode> {
+    return this.service.reopen(patientId, episodeId);
   }
 }

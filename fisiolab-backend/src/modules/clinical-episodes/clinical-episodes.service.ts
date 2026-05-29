@@ -74,7 +74,7 @@ export class ClinicalEpisodesService {
     const patient = await this.patientRepo.findOne({ where: { id: patientId }, select: ['id'] });
     if (!patient) throw new NotFoundException(`Paciente ${patientId} no encontrado`);
 
-    const { page, limit, estado } = query;
+    const { page, limit, estado, codigoCie10 } = query;
     const qb = this.repo
       .createQueryBuilder('e')
       .where('e.patient_id = :patientId', { patientId })
@@ -83,6 +83,7 @@ export class ClinicalEpisodesService {
       .take(limit);
 
     if (estado) qb.andWhere('e.estado = :estado', { estado });
+    if (codigoCie10) qb.andWhere('UPPER(e.codigo_cie10) = UPPER(:codigoCie10)', { codigoCie10 });
 
     const [data, total] = await qb.getManyAndCount();
     return PaginatedResponseDto.of(data, total, page, limit);
@@ -122,9 +123,14 @@ export class ClinicalEpisodesService {
       throw new UnprocessableEntityException(`Episodio ${episode.estado} — solo se puede archivar`);
     }
 
-    if (dto.estado) {
+    if (dto.estado === EstadoEpisodio.CERRADO) {
+      throw new UnprocessableEntityException('Para cerrar un episodio, utilice el endpoint correspondiente');
+    }
+
+    if (dto.estado){
       this.assertStateTransition(episode.estado, dto.estado, userRole);
     }
+  
 
     if (dto.motivoConsulta !== undefined) episode.motivoConsulta = dto.motivoConsulta;
     if (dto.profesionalId !== undefined) episode.profesionalId = dto.profesionalId;
@@ -169,10 +175,56 @@ export class ClinicalEpisodesService {
     return saved;
   }
 
+  // ─── Reopen ──────────────────────────────────────────────────────────────────
+
+  /**
+   * Reabre un episodio clínico que estaba cerrado.
+   * Permite volver a un episodio cerrado al estado ABIERTO.
+   * 
+   * @param patientId - ID del paciente propietario del episodio
+   * @param episodeId - ID del episodio a reabrir
+   * @returns El episodio actualizado con estado ABIERTO
+   * @throws NotFoundException - Si el episodio no existe para ese paciente
+   * @throws UnprocessableEntityException - Si el episodio no está cerrado
+   */
+  async reopen(
+    patientId: string,
+    episodeId: string,
+  ): Promise<ClinicalEpisode> {
+    // Buscar el episodio por ID y validar que pertenece al paciente
+    const episode = await this.repo.findOne({
+      where: { id: episodeId, pacienteId: patientId },
+      relations: ['paciente'],
+    });
+    if (!episode) throw new NotFoundException(`Episodio ${episodeId} no encontrado`);
+
+    // Validar que el episodio esté en estado CERRADO antes de reabrirlo
+    if (episode.estado !== EstadoEpisodio.CERRADO) {
+      throw new UnprocessableEntityException(
+        `Solo se pueden reabrir episodios cerrados. Este está ${episode.estado}`,
+      );
+    }
+
+    // Cambiar el estado a ABIERTO
+    episode.estado = EstadoEpisodio.ABIERTO;
+    
+    // Limpiar la fecha de cierre y la nota de cierre
+    episode.fechaCierre = null;
+    episode.notaCierre = null;
+
+    // Guardar los cambios en la base de datos
+    const saved = await this.repo.save(episode);
+    
+    // Invalidar el cache para este episodio
+    await this.redis.del(CK.EPISODE_ID(episodeId));
+    
+    return saved;
+  }
+
   // ─── Find all global ─────────────────────────────────────────────────────────
 
   async findAll(query: EpisodeQueryDto): Promise<PaginatedResponseDto<ClinicalEpisode>> {
-    const { page, limit, estado, profesionalId, search, desde, hasta } = query;
+    const { page, limit, estado, profesionalId, search, desde, hasta, codigoCie10 } = query;
 
     const qb = this.repo
       .createQueryBuilder('e')
@@ -183,6 +235,7 @@ export class ClinicalEpisodesService {
 
     if (estado) qb.andWhere('e.estado = :estado', { estado });
     if (profesionalId) qb.andWhere('e.profesional_id = :profesionalId', { profesionalId });
+    if (codigoCie10) qb.andWhere('UPPER(e.codigo_cie10) = UPPER(:codigoCie10)', { codigoCie10 });
     if (search) {
       qb.andWhere(
         '(LOWER(e.motivo_consulta) ILIKE :s OR LOWER(e.diagnostico_principal) ILIKE :s)',

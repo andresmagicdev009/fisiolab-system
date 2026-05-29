@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsOptional, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
+import { IsEnum, IsNotIn, IsOptional, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
 import { EstadoEpisodio } from '../entities/clinical-episode.entity';
 
 export class UpdateEpisodeDto {
@@ -42,5 +42,6 @@ export class UpdateEpisodeDto {
   @ApiPropertyOptional({ enum: EstadoEpisodio })
   @IsOptional()
   @IsEnum(EstadoEpisodio)
+  @IsNotIn([EstadoEpisodio.CERRADO], { message: 'Para cerrar un episodio, utilice el endpoint correspondiente' })
   estado?: EstadoEpisodio;
 }

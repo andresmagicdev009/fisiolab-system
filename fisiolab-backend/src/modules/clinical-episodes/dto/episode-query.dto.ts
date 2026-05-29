@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsDateString, IsEnum, IsOptional, IsString, IsUUID } from 'class-validator';
+import { IsDateString, IsEnum, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
 import { PaginationQueryDto } from '../../../common/dto/pagination.dto';
 import { EstadoEpisodio } from '../entities/clinical-episode.entity';
 
@@ -14,6 +14,12 @@ export class EpisodeQueryDto extends PaginationQueryDto {
   @IsOptional()
   @IsUUID()
   profesionalId?: string;
+
+  @ApiPropertyOptional({ example: 'M54.1' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(10)
+  codigoCie10?: string;
 
   @ApiPropertyOptional({ example: 'lumbalgia' })
   @IsOptional()

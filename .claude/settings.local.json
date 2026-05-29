@@ -9,7 +9,18 @@
       "Bash(Get-ChildItem -Path \"D:\\\\Proyectos\\\\Web\\\\fisiolab-system\\\\fisiolab-ui\\\\src\" -Recurse -File)",
       "Bash(Select-Object -ExpandProperty FullName)",
       "Bash(Sort-Object)",
-      "Bash(echo \"failed: $?\")"
+      "Bash(echo \"failed: $?\")",
+      "Bash(Get-ChildItem *)",
+      "PowerShell(Get-ChildItem \"D:\\\\Proyectos\\\\Web\\\\fisiolab-system\\\\\" | ForEach-Object { $_.Name })",
+      "PowerShell(Get-ChildItem \"D:\\\\Proyectos\\\\Web\\\\fisiolab-system\\\\fisiolab-backend\\\\src\\\\\" -Directory | ForEach-Object { $_.Name })",
+      "PowerShell(Get-ChildItem \"D:\\\\Proyectos\\\\Web\\\\fisiolab-system\\\\fisiolab-backend\\\\src\\\\modules\\\\\" -Directory | ForEach-Object { $_.Name })",
+      "PowerShell(Get-ChildItem \"D:\\\\Proyectos\\\\Web\\\\fisiolab-system\\\\fisiolab-ui\\\\src\\\\pages\\\\\" -Directory | ForEach-Object { $_.Name })",
+      "PowerShell(Get-ChildItem \"D:\\\\Proyectos\\\\Web\\\\fisiolab-system\\\\fisiolab-ui\\\\src\\\\pages\\\\professional\\\\\" -Directory | ForEach-Object { $_.Name })",
+      "PowerShell(Get-ChildItem \"D:\\\\Proyectos\\\\Web\\\\fisiolab-system\\\\fisiolab-ui\\\\src\\\\pages\\\\professional\\\\appointments\\\\\" -Recurse -File | ForEach-Object { $_.Name })",
+      "PowerShell(Get-ChildItem \"D:\\\\Proyectos\\\\Web\\\\fisiolab-system\\\\specs\\\\\" -Recurse -File | ForEach-Object { $_.Name })",
+      "PowerShell(Get-ChildItem \"D:\\\\Proyectos\\\\Web\\\\fisiolab-system\\\\specs\\\\\" -File | ForEach-Object { $_.Name })",
+      "PowerShell(Get-ChildItem \"D:\\\\Proyectos\\\\Web\\\\fisiolab-system\\\\specs\\\\\" | ForEach-Object { $_ | Select-Object Name, FullName })",
+      "PowerShell(ls *)"
     ]
   }
 }
